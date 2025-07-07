@@ -1,18 +1,20 @@
 <template>
     <div class="video-container d-flex align-center" draggable="false" ref="rootEl">
-        <video ref="videoEl" autoplay muted draggable="false" :src="videoSrc"></video>
+        <video ref="videoEl" muted draggable="false" :src="videoSrc"></video>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useVideo } from '@/composables/Video.ts'
 import { useWeldingStore } from '@/store/Welding.ts'
 import { useDragRect } from '@/composables/DragRect.ts'
 
 const { files, centerX, centerY, width, height } = storeToRefs(useWeldingStore())
-const { videoEl } = useVideo()
+const video = useVideo()
+const { videoEl, setOnEndedCallback } = video
+
 const videoSrc = ref(files.value[0].filePath)
 const { el: rootEl, setCustomMouseUp, rect } = useDragRect()
 
@@ -33,6 +35,16 @@ setCustomMouseUp(() => {
     height.value = _height * yRatio
     centerX.value = _centerX * xRatio
     centerY.value = _centerY * yRatio
+})
+onMounted(() => {
+    if (videoEl.value) {
+        useWeldingStore().addVideoEl(videoEl.value)
+        useWeldingStore().addVideo({
+            el: videoEl.value,
+            currentTime: video.currentTime as unknown as number,
+            setOnEndedCallback: setOnEndedCallback,
+        })
+    }
 })
 </script>
 
