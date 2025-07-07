@@ -4,7 +4,6 @@
             ref="videoEl"
             @loadeddata="initCanvas"
             controls
-            autoplay
             muted
             draggable="false"
             :src="videoSrc"
@@ -14,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useWeldingStore } from '@/store/Welding.ts'
 import { storeToRefs } from 'pinia'
 import { useVideoToCanvas } from '@/composables/VideoToCanvas.ts'
@@ -26,6 +25,9 @@ const container = ref()
 
 const { videoEl, canvasEl, initCanvas } = useVideoToCanvas(drawFrame)
 
+// canvas.width/height 를 기준으로 하지말고, 비디오의 resolution 을 기준으로 한다.
+// 즉, canvas 엘리먼트의 실제 CSS 넓이와 상관없이,
+// 데이터 처리를 할 때는 canvas.width 가 아니라, video.videoWidth 를 기준으로 작업한다.
 function drawFrame(
     ctx: CanvasRenderingContext2D,
     now: DOMHighResTimeStamp,
@@ -53,6 +55,12 @@ function drawFrame(
         )
     }
 }
+
+onMounted(() => {
+    if (videoEl.value) {
+        useWeldingStore().addVideoEl(videoEl.value)
+    }
+})
 </script>
 
 <style lang="scss" scoped>
