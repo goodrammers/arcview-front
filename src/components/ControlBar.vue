@@ -42,13 +42,13 @@
         </div>
         <div>
             <input
-                style="width: 500px"
-                class="video-progress"
-                type="range"
-                min="0"
                 :max="iDuration"
-                step="0.01"
+                :min="0"
+                :step="0.01"
                 :value="currentTime"
+                class="video-progress"
+                style="width: 500px"
+                type="range"
                 @input="onSeek"
             />
         </div>
@@ -56,17 +56,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useWeldingStore } from '@/store/Welding.ts'
 import { storeToRefs } from 'pinia'
 import { formatTime } from '@/Utils/Formatter.ts'
+
+const props = defineProps<{ height: number }>()
+const heightPx = computed(() => props.height + 'px')
 
 const { files, isPlaying, currentTime } = storeToRefs(useWeldingStore())
 const { togglePlay, stop, seek } = useWeldingStore()
 const iDuration = ref(0)
 const duration = ref('')
 
-function onSeek(e: InputEvent) {
+function onSeek(e: Event) {
     const target = e.target as HTMLInputElement
     seek(+target.value)
 }
@@ -86,7 +89,7 @@ watch(
 <style scoped lang="scss">
 .control-bar-area {
     width: 100%;
-    height: 100px;
+    height: v-bind(heightPx);
     background: rgba(0, 0, 0, 0.8);
 }
 .video-progress {
