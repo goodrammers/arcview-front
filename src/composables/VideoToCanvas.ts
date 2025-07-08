@@ -1,14 +1,17 @@
-import { ref } from 'vue'
-import { useVideo } from '@/composables/Video.ts'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { useVideoStore } from '@/store/Video.ts'
+import { storeToRefs } from 'pinia'
 
 export function useVideoToCanvas(
+    index: number,
     drawFrameImpl: (
         ctx: CanvasRenderingContext2D,
         now: DOMHighResTimeStamp,
         metadata: VideoFrameCallbackMetadata
     ) => void
 ) {
-    const { videoEl } = useVideo()
+    const { video1, video2 } = storeToRefs(useVideoStore())
+    const selectedVideo = computed(() => [video1.value, video2.value][index])
     const canvasEl = ref<HTMLCanvasElement | null>(null)
     let videoWidth = 0
     let videoHeight = 0
@@ -19,7 +22,7 @@ export function useVideoToCanvas(
 
     function drawFrame() {
         const ctx = getContext()!
-        const video = videoEl.value!
+        const video = selectedVideo.value!
         function loop(now: DOMHighResTimeStamp, metadata: VideoFrameCallbackMetadata) {
             drawFrameImpl(ctx, now, metadata)
 
@@ -33,9 +36,7 @@ export function useVideoToCanvas(
 
     function initCanvas() {
         const canvas = canvasEl.value!
-        const video = videoEl.value!
-        const rect = video.getBoundingClientRect()
-
+        const video = selectedVideo.value!
         const ctx = canvas.getContext('2d')!
         const dpr = window.devicePixelRatio || 1
         videoWidth = video.videoWidth
@@ -45,16 +46,21 @@ export function useVideoToCanvas(
         canvas.width = videoWidth * dpr
         canvas.height = videoHeight * dpr
         ctx.scale(dpr, dpr)
-        canvas.style.width = rect.width + 'px'
-        canvas.style.height = rect.height + 'px'
 
         drawFrame()
     }
+
+    onMounted(() => {
+        selectedVideo.value?.addEventListener('loadeddata', initCanvas)
+    })
+    onBeforeUnmount(() => {
+        selectedVideo.value?.removeEventListener('loadeddata', initCanvas)
+    })
+
     return {
-        videoEl,
         canvasEl,
+        videoEl: selectedVideo,
 
         getContext,
-        initCanvas,
     }
 }

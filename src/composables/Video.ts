@@ -3,18 +3,19 @@ import { onBeforeMount, onMounted, ref } from 'vue'
 export function useVideo() {
     const videoEl = ref<HTMLVideoElement | null>(null)
     const isPlaying = ref(false)
-    let duration = 0
+    const duration = ref(0)
     const currentTime = ref(0)
     let onEndedCallback: null | (() => void) = null
 
-    function setRatio() {
+    function initValue() {
         const video = videoEl.value
         if (!video) {
             return
         }
+        duration.value = video.duration
+
         const w = video.videoWidth
         const h = video.videoHeight
-        duration = video.duration
         video.style.aspectRatio = `${w} / ${h}`
     }
 
@@ -35,14 +36,14 @@ export function useVideo() {
 
     onMounted(() => {
         if (videoEl.value) {
-            videoEl.value.addEventListener('loadedmetadata', setRatio)
+            videoEl.value.addEventListener('loadedmetadata', initValue)
             videoEl.value.addEventListener('ended', onEnded)
             videoEl.value.addEventListener('timeupdate', updateCurrentTime)
         }
     })
     onBeforeMount(() => {
         if (videoEl.value) {
-            videoEl.value.removeEventListener('loadedmetadata', setRatio)
+            videoEl.value.removeEventListener('loadedmetadata', initValue)
             videoEl.value.removeEventListener('ended', onEnded)
             videoEl.value.removeEventListener('timeupdate', updateCurrentTime)
         }
@@ -51,8 +52,7 @@ export function useVideo() {
     return {
         videoEl,
         currentTime,
-
-        setRatio,
+        duration,
         setOnEndedCallback,
     }
 }

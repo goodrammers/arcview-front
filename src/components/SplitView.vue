@@ -163,14 +163,11 @@ onUnmounted(() => {
 }
 
 .quadrant {
-    background-color: #f0f0f0;
-    border: 1px solid #e0e0e0;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
     overflow: auto;
-    padding: 15px;
     box-sizing: border-box;
 }
 
@@ -184,6 +181,7 @@ onUnmounted(() => {
 
 .resizer:hover {
     background-color: #777;
+    transform: scale(2);
 }
 
 /* 수직 리사이저 (세로선) */
@@ -191,10 +189,10 @@ onUnmounted(() => {
     cursor: ew-resize;
     top: 0;
     bottom: 0;
-    width: 6px;
+    width: 2px;
 
     // 중앙 정렬 (너비의 절반만큼 왼쪽으로)
-    margin-left: -3px;
+    margin-left: -1px;
 }
 
 /* 수평 리사이저 (가로선) */
@@ -205,8 +203,8 @@ onUnmounted(() => {
     left: 0;
     right: 0;
 
-    height: 6px;
+    height: 2px;
     // 중앙 정렬 (높이의 절반만큼 위로)
-    margin-top: -3px;
+    margin-top: -1px;
 }
 </style>

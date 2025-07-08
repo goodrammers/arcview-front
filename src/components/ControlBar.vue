@@ -56,34 +56,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { useWeldingStore } from '@/store/Welding.ts'
+import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { formatTime } from '@/Utils/Formatter.ts'
+import { useVideoStore } from '@/store/Video.ts'
 
 const props = defineProps<{ height: number }>()
 const heightPx = computed(() => props.height + 'px')
 
-const { files, isPlaying, currentTime } = storeToRefs(useWeldingStore())
-const { togglePlay, stop, seek } = useWeldingStore()
-const iDuration = ref(0)
-const duration = ref('')
+const { isPlaying, currentTime, duration: iDuration } = storeToRefs(useVideoStore())
+const { togglePlay, stop, seek } = useVideoStore()
+const duration = computed(() => formatTime(iDuration.value))
 
 function onSeek(e: Event) {
     const target = e.target as HTMLInputElement
     seek(+target.value)
 }
-
-watch(
-    files,
-    () => {
-        if (files.value[0].duration > 0) {
-            iDuration.value = files.value[0].duration
-            duration.value = formatTime(files.value[0].duration)
-        }
-    },
-    { deep: true }
-)
 </script>
 
 <style scoped lang="scss">
