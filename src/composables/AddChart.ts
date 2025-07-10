@@ -84,6 +84,7 @@ export function useAddChart() {
                 },
                 y: {
                     ticks: {
+                        //@ts-ignore
                         callback: (v) => v.toString().padStart(6, ' ') + ' ', // 항상 폭이 같은 글자
                         color: 'white',
                         font: {
@@ -110,15 +111,17 @@ export function useAddChart() {
 
         const chartConfig: { type: string } = {
             type: 'line',
+            // @ts-ignore
             data: makeData(item),
             options: makeOptions(),
             plugins: [makeVerticalLinePlugin()],
         }
+        // @ts-ignore
         const chart = new Chart(canvas, chartConfig)
         canvas.addEventListener('click', (event: MouseEvent) => {
             const rect = canvas.getBoundingClientRect()
             const xPixel = event.clientX - rect.left
-            const xValue = chart.scales.x.getValueForPixel(xPixel)
+            const xValue = chart.scales.x.getValueForPixel(xPixel)!
             seek(xValue)
         })
 
