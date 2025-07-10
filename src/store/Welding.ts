@@ -13,10 +13,16 @@ export interface WeldingVideoFile {
     crop: WeldingCropItem[]
 }
 
+export interface MetaDataItem {
+    name: string
+    value: number[]
+}
+
 export interface WeldingItem {
     id: string
     file1: WeldingVideoFile
     file2: WeldingVideoFile
+    metaData: MetaDataItem[]
 }
 
 export const useWeldingStore = defineStore('welding', () => {
