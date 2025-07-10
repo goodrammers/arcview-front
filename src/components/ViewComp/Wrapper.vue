@@ -1,11 +1,14 @@
 <template>
     <div class="wrapper-container">
-        <component
-            :is="selectedComp"
-            :index="index"
-            :videoIndex="videoIndex"
-            :isRoi="_isRoi"
-        ></component>
+        <keep-alive>
+            <component
+                :is="selectedComp"
+                :index="index"
+                :videoIndex="videoIndex"
+                :isRoi="_isRoi"
+                :key="selectedComp"
+            ></component>
+        </keep-alive>
         <VMenu location="start center" offset="10">
             <template #activator="{ props }">
                 <VBtn
@@ -29,7 +32,9 @@
                 <VListItem class="cursor-pointer" @click="() => setVideo(1, true)">
                     영상2(ROI)
                 </VListItem>
-                <VListItem class="cursor-pointer">1</VListItem>
+                <VListItem class="cursor-pointer" @click="() => setMetaChart()">
+                    차트 보기
+                </VListItem>
             </VList>
         </VMenu>
     </div>
@@ -37,6 +42,7 @@
 
 <script setup lang="ts">
 import Video from '@/components/ViewComp/Video.vue'
+import MetaChart from '@/components/ViewComp/MetaChart.vue'
 import type { Component } from 'vue'
 
 import { ref, shallowRef, toRefs } from 'vue'
@@ -51,6 +57,10 @@ function setVideo(index: number, isRoi: boolean) {
     _isRoi.value = isRoi
     videoIndex.value = index
     selectedComp.value = Video
+}
+
+function setMetaChart() {
+    selectedComp.value = MetaChart
 }
 </script>
 
