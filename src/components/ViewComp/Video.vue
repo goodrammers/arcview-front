@@ -20,13 +20,55 @@ let stopWatch: ReturnType<typeof watch> | null = null
 function drawFrame(
     captured: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
-    width: number,
-    height: number
+    videoWidth: number,
+    videoHeight: number
 ) {
-    ctx.clearRect(0, 0, width, height)
+    ctx.fillStyle = 'black'
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+
+    const videoAspect = videoWidth / videoHeight
+    const canvasWidth = ctx.canvas.clientWidth
+    const canvasHeight = ctx.canvas.clientHeight
+    const canvasAspect = canvasWidth / canvasHeight
+
+    let drawWidth = 0
+    let drawHeight = 0
+    let offsetX = 0
+    let offsetY = 0
+
+    if (videoAspect > canvasAspect) {
+        // 비디오 width 가 캔버스의 width 보다 큰 경우
+        // 너비 기준으로 맞추고, 높이는 축소
+        drawWidth = videoWidth
+
+        // 실제 canvas element 기준 높이
+        const h = canvasWidth / videoAspect
+        // canvas 좌표계로 맞추기
+        const ratio = videoHeight / canvasHeight
+        drawHeight = h * ratio
+
+        offsetY = (videoHeight - drawHeight) / 2
+    } else {
+        // 비디오 height 가 캔버스의 height 보다 큰 경우
+        // 높이 기준으로 맞추고, 너비는 축소
+        drawHeight = videoHeight
+
+        // 실제 canvas element 기준 너비
+        const w = canvasHeight * videoAspect
+        // canvas 좌표계로 맞추기
+        const ratio = videoWidth / canvasWidth
+        drawWidth = w * ratio
+
+        offsetX = (videoWidth - drawWidth) / 2
+    }
+    // console.log(offsetX, offsetY, drawWidth, drawHeight)
+    // ctx.drawImage(captured, offsetX, offsetY, drawWidth, drawHeight)
+    ctx.drawImage(captured, 0, 0, videoWidth, videoHeight, offsetX, offsetY, drawWidth, drawHeight)
+    // console.log(offsetX, offsetY, drawWidth, drawHeight)
+
     // const { centerX, centerY, width, height } = getCropInfo()
     // if (width <= 0 || height <= 0) {
-    ctx.drawImage(captured, 0, 0, width, height)
+    // ctx.drawImage(captured, 0, 0, width, height)
     // } else {
     //     ctx.drawImage(
     //         video,

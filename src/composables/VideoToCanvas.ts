@@ -1,6 +1,7 @@
-import { onBeforeUnmount, type Ref, ref, watch } from 'vue'
+import { onBeforeUnmount, onMounted, type Ref, ref, watch } from 'vue'
 import { useVideoStore } from '@/store/Video.ts'
 import { storeToRefs } from 'pinia'
+import { debounce } from '@/Utils/Debounce.ts'
 
 export function useVideoToCanvas(
     index: Ref<number>,
@@ -17,6 +18,7 @@ export function useVideoToCanvas(
     let videoWidth = 0
     let videoHeight = 0
     let stopWatch: null | ReturnType<typeof watch> = null
+    let resizeObserver: ResizeObserver | null = null
 
     function getCapturedCanvas(): HTMLCanvasElement {
         return [capturedCanvas1, capturedCanvas2][index.value] as unknown as HTMLCanvasElement
@@ -65,9 +67,23 @@ export function useVideoToCanvas(
         drawFrame()
     }
 
+    onMounted(() => {
+        if (canvasEl.value) {
+            const debouncedDraw = debounce(drawFrame, 100)
+
+            resizeObserver = new ResizeObserver(() => {
+                debouncedDraw()
+            })
+            resizeObserver.observe(canvasEl.value)
+        }
+    })
+
     onBeforeUnmount(() => {
         if (stopWatch) {
             stopWatch()
+        }
+        if (resizeObserver && canvasEl.value) {
+            resizeObserver.unobserve(canvasEl.value)
         }
     })
 

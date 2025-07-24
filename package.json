@@ -6,7 +6,7 @@
     "scripts": {
         "json-server": "json-server db.json --port 4400 --routes routes.json",
         "vite": "vite",
-        "dev": "concurrently \"yarn json-server\" \"yarn vite\"",
+        "dev": "concurrently --kill-others \"yarn json-server\" \"yarn vite\"",
         "build": "run-p type-check \"build-only {@}\" --",
         "preview": "vite preview",
         "build-only": "vite build",
