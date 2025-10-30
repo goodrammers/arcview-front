@@ -4,6 +4,7 @@ import Login from '@/pages/Login.vue'
 import Dashboard from '@/pages/Dashboard.vue'
 import MainLayout from '@/layout/MainLayout.vue'
 import RealTime from '@/pages/RealTime.vue'
+import Admin from '@/pages/Admin.vue'
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -13,6 +14,7 @@ const routes: Array<RouteRecordRaw> = [
             { path: 'dashboard', component: Dashboard },
             { path: 'welding-view', component: WeldingView },
             { path: 'real-time', component: RealTime },
+            { path: 'admin', component: Admin },
         ],
     },
 

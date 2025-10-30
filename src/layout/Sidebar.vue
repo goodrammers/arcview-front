@@ -72,7 +72,7 @@ const selectedMenu = ref(0)
 
 function goTo(index: number) {
     selectedMenu.value = index
-    const routePath = ['/home/dashboard', '/home/real-time', '', '']
+    const routePath = ['/home/dashboard', '/home/real-time', '', '/home/admin']
     router.push(routePath[index])
 }
 </script>
