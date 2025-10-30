@@ -36,11 +36,15 @@
             <VWindow v-model="currentType">
                 <VWindowItem>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <DashboardCard></DashboardCard>
+                        <DashboardCard
+                            v-for="job in jobs"
+                            :key="job.id"
+                            :item="job"
+                        ></DashboardCard>
                     </div>
                 </VWindowItem>
                 <VWindowItem>
-                    <DashboardTable></DashboardTable>
+                    <DashboardTable :items="jobs"></DashboardTable>
                 </VWindowItem>
             </VWindow>
         </div>
@@ -51,10 +55,18 @@
 import DashboardCard from '@/pages/DashboardCard.vue'
 import { ref } from 'vue'
 import DashboardTable from '@/pages/DashboardTable.vue'
+import { fetchJobs, type Job } from '@/api/Jobs.ts'
 const currentType = ref(0)
+const jobs = ref<Job[]>([])
 function selectType(index: number) {
     currentType.value = index
 }
+
+async function init() {
+    jobs.value = await fetchJobs()
+    console.log(jobs.value)
+}
+init()
 </script>
 
 <style scoped lang="scss"></style>

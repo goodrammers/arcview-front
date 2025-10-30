@@ -23,25 +23,25 @@
         </div>
         <div class="p-4">
             <div class="cursor-pointer">
-                <h3 class="text-lg font-semibold text-gray-900 mb-3">251020-105040</h3>
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">{{ item.id }}</h3>
                 <div class="space-y-2 text-sm text-gray-600">
                     <div class="flex items-center">
                         <i
                             class="ri-building-line w-4 h-4 flex items-center justify-center mr-2 text-gray-400"
                         ></i>
-                        <span>1호 작업실</span>
+                        <span>작업실 이름(작업중)</span>
                     </div>
                     <div class="flex items-center">
                         <i
                             class="ri-tools-line w-4 h-4 flex items-center justify-center mr-2 text-gray-400"
                         ></i>
-                        <span>WM-2000 Pro</span>
+                        <span>용접기 이름(작업중)</span>
                     </div>
                     <div class="flex items-center">
                         <i
                             class="ri-time-line w-4 h-4 flex items-center justify-center mr-2 text-gray-400"
                         ></i>
-                        <span>1시간 39분</span>
+                        <span>{{ formatDuration(item.start_time, item.end_time) }}</span>
                     </div>
                 </div>
             </div>
@@ -49,6 +49,13 @@
     </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import type { Job } from '@/api/Jobs.ts'
+import { toRefs } from 'vue'
+import { formatDuration } from '../Utils/Formatter.ts'
+
+const props = defineProps<{ item: Job }>()
+const { item } = toRefs(props)
+</script>
 
 <style scoped lang="scss"></style>

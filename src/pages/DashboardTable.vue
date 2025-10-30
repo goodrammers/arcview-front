@@ -4,24 +4,28 @@
             <table class="w-full">
                 <DashboardTableHeader></DashboardTableHeader>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    <tr class="hover:bg-gray-50 transition-colors">
+                    <tr
+                        class="hover:bg-gray-50 transition-colors"
+                        v-for="item in items"
+                        :key="item.id"
+                    >
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div
                                 class="text-sm font-medium text-gray-900 cursor-pointer hover:text-blue-600"
                             >
-                                251020-105040
+                                {{ item.id }}
                             </div>
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            1호 작업실
+                            {{ formatStamp(item.start_time) }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            WM-2000 Pro
+                            {{ formatStamp(item.end_time) }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">10:50:40</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">12:30:15</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            1시간 39분
+                            {{ formatDuration(item.start_time, item.end_time) }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex items-center justify-end space-x-2">
@@ -42,6 +46,21 @@
 
 <script setup lang="ts">
 import DashboardTableHeader from '@/pages/DashboardTableHeader.vue'
+import type { Job } from '@/api/Jobs.ts'
+import { toRefs } from 'vue'
+import { formatDuration } from '@/Utils/Formatter.ts'
+
+const props = defineProps<{ items: Job[] }>()
+const { items } = toRefs(props)
+
+function formatStamp(stamp: number) {
+    const date = new Date(stamp / 1000)
+    const hh = String(date.getHours()).padStart(2, '0')
+    const mm = String(date.getMinutes()).padStart(2, '0')
+    const ss = String(date.getSeconds()).padStart(2, '0')
+
+    return `${hh}:${mm}:${ss}`
+}
 </script>
 
 <style scoped lang="scss"></style>
