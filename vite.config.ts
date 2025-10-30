@@ -26,6 +26,7 @@ export default defineConfig({
         },
     },
     server: {
+        port: 3200,
         proxy: {
             '/api': {
                 target: `http://localhost:${jsonServerPort}`,
