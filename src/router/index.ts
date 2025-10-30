@@ -6,16 +6,15 @@ import MainLayout from '@/pages/MainLayout.vue'
 
 const routes: Array<RouteRecordRaw> = [
     {
-        path: '/',
+        path: '/home',
         component: MainLayout,
-        redirect: '/dashboard',
         children: [
             { path: '/dashboard', component: Dashboard },
             { path: '/welding-view', component: WeldingView },
         ],
     },
 
-    { path: '/login', component: Login },
+    { path: '/', component: Login },
 ]
 
 const router = createRouter({
