@@ -12,8 +12,12 @@
             <ul class="space-y-2">
                 <li>
                     <button
-                        class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors cursor-pointer whitespace-nowrap text-blue-700"
-                        :class="[selectedMenu === 0 ? 'bg-blue-50' : 'hover:bg-gray-50']"
+                        class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                        :class="[
+                            selectedMenu === 0
+                                ? 'bg-blue-50 text-blue-700'
+                                : 'hover:bg-gray-50 text-gray-700',
+                        ]"
                         @click="() => goTo(0)"
                     >
                         <i class="ri-home-line text-lg mr-3"></i>
@@ -23,8 +27,12 @@
                 <li>
                     <button
                         @click="() => goTo(1)"
-                        class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors cursor-pointer whitespace-nowrap text-gray-700"
-                        :class="[selectedMenu === 1 ? 'bg-blue-50' : 'hover:bg-gray-50']"
+                        class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                        :class="[
+                            selectedMenu === 1
+                                ? 'bg-blue-50 text-blue-700'
+                                : 'hover:bg-gray-50 text-gray-700',
+                        ]"
                     >
                         <i class="ri-live-line text-lg mr-3"></i>
                         실시간 보기
@@ -32,8 +40,12 @@
                 </li>
                 <li>
                     <button
-                        class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors cursor-pointer whitespace-nowrap text-gray-700"
-                        :class="[selectedMenu === 2 ? 'bg-blue-50' : 'hover:bg-gray-50']"
+                        class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                        :class="[
+                            selectedMenu === 2
+                                ? 'bg-blue-50 text-blue-700'
+                                : 'hover:bg-gray-50 text-gray-700',
+                        ]"
                         @click="() => goTo(2)"
                     >
                         <i class="ri-tools-line text-lg mr-3"></i>
@@ -42,8 +54,12 @@
                 </li>
                 <li>
                     <button
-                        class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors cursor-pointer whitespace-nowrap text-gray-700"
-                        :class="[selectedMenu === 3 ? 'bg-blue-50' : 'hover:bg-gray-50']"
+                        class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                        :class="[
+                            selectedMenu === 3
+                                ? 'bg-blue-50 text-blue-700'
+                                : 'hover:bg-gray-50 text-gray-700',
+                        ]"
                         @click="() => goTo(3)"
                     >
                         <i class="ri-admin-line text-lg mr-3"></i>
