@@ -1,8 +1,10 @@
 <template>
     <VApp>
         <VMain>
-            <Sidebar></Sidebar>
-            <router-view></router-view>
+            <div class="flex h-screen bg-gray-50">
+                <Sidebar></Sidebar>
+                <router-view></router-view>
+            </div>
         </VMain>
     </VApp>
 </template>

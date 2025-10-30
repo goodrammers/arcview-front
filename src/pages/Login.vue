@@ -80,7 +80,7 @@ const pw = ref('')
 async function login(e: Event) {
     e.preventDefault()
     if (id.value && pw.value) {
-        router.push('/dashboard')
+        router.push('/home/dashboard')
     }
 }
 </script>
