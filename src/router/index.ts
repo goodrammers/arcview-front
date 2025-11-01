@@ -2,20 +2,25 @@ import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-rou
 import WeldingView from '@/pages/WeldingView.vue'
 import Login from '@/pages/Login.vue'
 import Dashboard from '@/pages/Dashboard.vue'
-import MainLayout from '@/pages/MainLayout.vue'
+import MainLayout from '@/layout/MainLayout.vue'
+import RealTime from '@/pages/RealTime.vue'
+import Admin from '@/pages/Admin.vue'
+import TaskManager from '@/pages/TaskManager.vue'
 
 const routes: Array<RouteRecordRaw> = [
     {
-        path: '/',
+        path: '/home',
         component: MainLayout,
-        redirect: '/dashboard',
         children: [
-            { path: '/dashboard', component: Dashboard },
-            { path: '/welding-view', component: WeldingView },
+            { path: 'dashboard', component: Dashboard },
+            { path: 'welding-view', component: WeldingView },
+            { path: 'real-time', component: RealTime },
+            { path: 'task', component: TaskManager },
+            { path: 'admin', component: Admin },
         ],
     },
 
-    { path: '/login', component: Login },
+    { path: '/', component: Login },
 ]
 
 const router = createRouter({
