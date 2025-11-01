@@ -30,10 +30,10 @@
             </div>
             <VWindow v-model="selectedTab">
                 <VWindowItem>
-                    <TaskManagerWorks></TaskManagerWorks>
+                    <TaskManagerWorks :booth="booth" :cameras="cameras"></TaskManagerWorks>
                 </VWindowItem>
                 <VWindowItem>
-                    <TaskManagerWelder></TaskManagerWelder>
+                    <TaskManagerWelder :welders="welders" :booth="booth"></TaskManagerWelder>
                 </VWindowItem>
             </VWindow>
         </div>
@@ -44,12 +44,26 @@
 import { ref } from 'vue'
 import TaskManagerWorks from '@/pages/TaskManagerWorks.vue'
 import TaskManagerWelder from '@/pages/TaskManagerWelder.vue'
+import { type Booth, fetchBooths } from '@/api/Booth.ts'
+import { type Camera, fetchCameras } from '@/api/Camera.ts'
+import { fetchWelders, type Welder } from '@/api/Welder.ts'
 
 const selectedTab = ref(0)
+const booth = ref<Booth[]>([])
+const cameras = ref<Camera[]>([])
+const welders = ref<Welder[]>([])
 
 function selectTab(index: number) {
     selectedTab.value = index
 }
+
+async function init() {
+    booth.value = await fetchBooths()
+    cameras.value = await fetchCameras()
+    welders.value = await fetchWelders()
+}
+
+init()
 </script>
 
 <style scoped lang="scss"></style>

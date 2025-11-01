@@ -64,7 +64,6 @@ function selectType(index: number) {
 
 async function init() {
     jobs.value = await fetchJobs()
-    console.log(jobs.value)
 }
 init()
 </script>
