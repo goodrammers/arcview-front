@@ -9,18 +9,17 @@ import TaskManager from '@/pages/TaskManager.vue'
 
 const routes: Array<RouteRecordRaw> = [
     {
-        path: '/home',
+        path: '/',
         component: MainLayout,
+        redirect: '/dashboard',
         children: [
-            { path: 'dashboard', component: Dashboard },
-            { path: 'welding-view', component: WeldingView },
-            { path: 'real-time', component: RealTime },
-            { path: 'task', component: TaskManager },
-            { path: 'admin', component: Admin },
+            { path: '/dashboard', component: Dashboard },
+            { path: '/welding-view', component: WeldingView },
+            { path: '/real-time', component: RealTime },
+            { path: '/task', component: TaskManager },
+            { path: '/admin', component: Admin },
         ],
     },
-
-    { path: '/', component: Login },
 ]
 
 const router = createRouter({
