@@ -68,14 +68,6 @@
                 </li>
             </ul>
         </nav>
-        <div class="p-4 border-t border-gray-200">
-            <button
-                class="w-full flex items-center px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
-            >
-                <i class="ri-logout-box-line text-lg mr-3"></i>
-                로그아웃
-            </button>
-        </div>
     </div>
 </template>
 
@@ -88,7 +80,7 @@ const selectedMenu = ref(0)
 
 function goTo(index: number) {
     selectedMenu.value = index
-    const routePath = ['/home/dashboard', '/home/real-time', '/home/task', '/home/admin']
+    const routePath = ['/dashboard', '/real-time', '/task', '/admin']
     router.push(routePath[index])
 }
 </script>
