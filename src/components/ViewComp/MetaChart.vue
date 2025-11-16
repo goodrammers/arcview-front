@@ -8,8 +8,9 @@ import { onMounted } from 'vue'
 const { parentEl, createChart } = useAddChart()
 
 onMounted(() => {
-    createChart('meta1')
-    createChart('meta2')
+    createChart('current')
+    createChart('wire_feeding_speed')
+    createChart('voltage')
 })
 </script>
 

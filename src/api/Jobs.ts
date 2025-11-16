@@ -19,7 +19,7 @@ interface JobVideo {
     file_path: string
 }
 
-interface JobMeasurement {
+export interface JobMeasurement {
     timestamp: number
     voltage: number
     current: number

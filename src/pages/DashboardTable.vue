@@ -72,7 +72,7 @@ function formatStamp(stamp: number) {
 
     return `${YYYY}-${MM}-${DD} ${hh}:${mm}:${ss}`
 }
-async function onClicked(id: string) {
+async function onClicked(id: number) {
     router.push({ path: '/welding-view', query: { id } })
 }
 </script>

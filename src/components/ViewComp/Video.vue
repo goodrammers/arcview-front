@@ -8,8 +8,8 @@
 import { onBeforeUnmount, onMounted, ref, toRefs, watch } from 'vue'
 import { useVideoToCanvas } from '@/composables/VideoToCanvas.ts'
 
-const props = defineProps<{ videoIndex: number; isRoi: boolean }>()
-const { videoIndex, isRoi } = toRefs(props)
+const props = defineProps<{ videoIndex: number }>()
+const { videoIndex } = toRefs(props)
 const container = ref()
 const { canvasEl, initCanvas } = useVideoToCanvas(videoIndex, drawFrame)
 let stopWatch: ReturnType<typeof watch> | null = null
@@ -61,27 +61,8 @@ function drawFrame(
 
         offsetX = (videoWidth - drawWidth) / 2
     }
-    // console.log(offsetX, offsetY, drawWidth, drawHeight)
-    // ctx.drawImage(captured, offsetX, offsetY, drawWidth, drawHeight)
-    ctx.drawImage(captured, 0, 0, videoWidth, videoHeight, offsetX, offsetY, drawWidth, drawHeight)
-    // console.log(offsetX, offsetY, drawWidth, drawHeight)
 
-    // const { centerX, centerY, width, height } = getCropInfo()
-    // if (width <= 0 || height <= 0) {
-    // ctx.drawImage(captured, 0, 0, width, height)
-    // } else {
-    //     ctx.drawImage(
-    //         video,
-    //         centerX - width / 2,
-    //         centerY - height / 2,
-    //         width,
-    //         height,
-    //         0,
-    //         0,
-    //         metadata.width,
-    //         metadata.height
-    //     )
-    // }
+    ctx.drawImage(captured, 0, 0, videoWidth, videoHeight, offsetX, offsetY, drawWidth, drawHeight)
 }
 
 onMounted(() => {

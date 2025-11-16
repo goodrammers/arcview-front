@@ -24,11 +24,18 @@ import SplitView from '@/components/SplitView.vue'
 import Wrapper from '@/components/ViewComp/Wrapper.vue'
 import { storeToRefs } from 'pinia'
 import { useVideoStore } from '@/store/Video.ts'
+import { useRoute } from 'vue-router'
+import { useWeldingStore } from '@/store/Welding.ts'
 
 const { video1, video2 } = storeToRefs(useVideoStore())
+const { fetchJob } = useWeldingStore()
 
 const scrollBarHeight = ref(100)
 const scrollBarHeightPx = computed(() => scrollBarHeight.value + 'px')
+const route = useRoute()
+const jobId = (route.query as { id: string }).id
+
+fetchJob(jobId)
 </script>
 
 <style scoped lang="scss">

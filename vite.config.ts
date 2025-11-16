@@ -17,6 +17,9 @@ export default defineConfig({
             '/api': {
                 target: `http://192.168.0.64:5050`,
             },
+            '/videos': {
+                target: 'http://192.168.0.64:5050',
+            },
             '/realtime': {
                 target: 'ws://192.168.0.64:5050',
                 ws: true,

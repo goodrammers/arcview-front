@@ -1,7 +1,7 @@
 import { ref, watch } from 'vue'
 import { Chart, registerables } from 'chart.js'
 import { storeToRefs } from 'pinia'
-import { type MetaDataItem, useWeldingStore } from '@/store/Welding.ts'
+import { useWeldingStore } from '@/store/Welding.ts'
 import { useVideoStore } from '@/store/Video.ts'
 Chart.register(...registerables)
 
@@ -27,13 +27,13 @@ export function useAddChart() {
         return canvas
     }
 
-    function makeData(item: MetaDataItem) {
+    function makeData(name: string, value: number[]) {
         return {
-            labels: item.value.map((value, index) => index.toString()),
+            labels: value.map((value, index) => index.toString()),
             datasets: [
                 {
-                    label: item.name,
-                    data: item.value.map((value, index) => ({ x: index, y: value })),
+                    label: name,
+                    data: value.map((value, index) => ({ x: index, y: value })),
                     borderColor: 'yellow',
                     borderWidth: 1,
                     pointRadius: 1,
@@ -100,11 +100,13 @@ export function useAddChart() {
     }
 
     function createChart(metaName: string) {
-        const { currentItem } = storeToRefs(useWeldingStore())
-        const { metaData } = currentItem.value!
-        const item = metaData.find((value) => value.name === metaName)
+        const { currentJob } = storeToRefs(useWeldingStore())
+        const { measurements } = currentJob.value!
+        // @ts-ignore
+        const data = measurements.map((value) => value[metaName])
+
         const parent = parentEl.value
-        if (!parent || !item) {
+        if (!parent) {
             return
         }
         const canvas = createCanvas()
@@ -112,7 +114,7 @@ export function useAddChart() {
         const chartConfig: { type: string } = {
             type: 'line',
             // @ts-ignore
-            data: makeData(item),
+            data: makeData(metaName, data),
             options: makeOptions(),
             plugins: [makeVerticalLinePlugin()],
         }
