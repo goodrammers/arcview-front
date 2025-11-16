@@ -12,12 +12,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import DashboardTable from '@/pages/DashboardTable.vue'
-import { fetchJobs, type Job } from '@/api/Jobs.ts'
+import { geJobs, type Job } from '@/api/Jobs.ts'
 
 const jobs = ref<Job[]>([])
 
 async function init() {
-    jobs.value = await fetchJobs()
+    jobs.value = await geJobs()
 }
 init()
 </script>

@@ -16,8 +16,12 @@
                                 {{ item.id }}
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ item.booth_name }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ item.welder_name }}
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ formatStamp(item.start_time) }}
                         </td>
@@ -55,11 +59,15 @@ const { items } = toRefs(props)
 
 function formatStamp(stamp: number) {
     const date = new Date(stamp / 1000)
+    const YYYY = String(date.getFullYear())
+    const MM = String(date.getMonth()).padStart(2, '0')
+    const DD = String(date.getDate()).padStart(2, '0')
+
     const hh = String(date.getHours()).padStart(2, '0')
     const mm = String(date.getMinutes()).padStart(2, '0')
     const ss = String(date.getSeconds()).padStart(2, '0')
 
-    return `${hh}:${mm}:${ss}`
+    return `${YYYY}-${MM}-${DD} ${hh}:${mm}:${ss}`
 }
 </script>
 
