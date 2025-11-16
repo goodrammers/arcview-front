@@ -33,8 +33,15 @@
                     </div>
                 </div>
             </div>
-            <div class="bg-white rounded-lg border border-gray-200 py-6 px-10">
-                <div class="relative bg-black rounded-lg overflow-hidden" style="height: 660px">
+
+            <div
+                class="bg-white rounded-lg border border-gray-200 py-6 px-10"
+                style="display: flex"
+            >
+                <div
+                    class="relative bg-black rounded-lg overflow-hidden"
+                    style="height: 660px; width: 1000px"
+                >
                     <video
                         ref="videoEl"
                         muted
@@ -55,15 +62,32 @@
                         </div>
                     </div>
                 </div>
+                <div style="width: 400px; margin-left: 20px; color: black; padding: 20px">
+                    <div>current: {{ realtimeData[realtimeData.length - 1]?.current }}</div>
+                    <div>voltage: {{ realtimeData[realtimeData.length - 1]?.voltage }}</div>
+                    <div>
+                        feeding speed:
+                        {{ realtimeData[realtimeData.length - 1]?.wire_feeding_speed }}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { getRealtimeBooth, type RealTimeBoothItem } from '@/api/Realtime.ts'
 import { usePlayer } from '@/composables/Player.ts'
+
+interface RealtimeWelder {
+    welder_id: number
+    current: number
+    timestamp: number
+    voltage: number
+    wire_feeding_speed: number
+}
+
 const videoEl = ref<HTMLVideoElement>()
 const videoConnected = ref(false)
 const booths = ref<RealTimeBoothItem[]>([])
@@ -78,8 +102,24 @@ const cameraSelectors = computed(() => {
     return []
 })
 const selectedBooth = ref('')
-const selectedCamera = ref('')
+const selectedCamera = ref<{ id: number; name: string; welder_id: number } | undefined>(undefined)
+const realtimeData = ref<RealtimeWelder[]>([])
+const MAX_DATA_LENGTH = 30
+
 const { changeCam, setVideoEl } = usePlayer()
+
+const ws = new WebSocket(`${window.location.origin.replace('http', 'ws')}/realtime`)
+ws.onmessage = (event) => {
+    const data = JSON.parse(event.data) as RealtimeWelder
+    if (selectedCamera.value) {
+        if (selectedCamera.value.welder_id === data.welder_id) {
+            realtimeData.value.push(data)
+            if (realtimeData.value.length > MAX_DATA_LENGTH) {
+                realtimeData.value.shift()
+            }
+        }
+    }
+}
 
 function connect() {
     if (!selectedCamera.value) {
@@ -87,7 +127,7 @@ function connect() {
     }
     videoConnected.value = true
     const video = videoEl.value
-    changeCam(selectedCamera.value)
+    changeCam(selectedCamera.value.id)
     setVideoEl(video!)
 }
 
@@ -95,7 +135,12 @@ function onBoothSelected(e: Event) {
     selectedBooth.value = (e.target as HTMLSelectElement).value
 }
 function onCameraSelected(e: Event) {
-    selectedCamera.value = (e.target as HTMLSelectElement).value
+    const cameraId = (e.target as HTMLSelectElement).value
+
+    const booth = booths.value.find((value) => value.id === +selectedBooth.value)
+    if (booth) {
+        selectedCamera.value = booth.cameras.find((value) => value.id === +cameraId)
+    }
 }
 
 async function fetchItems() {
