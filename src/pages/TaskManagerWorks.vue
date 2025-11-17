@@ -64,9 +64,14 @@
                         </td>
                         <td class="px-6 py-4">
                             <div class="space-y-1">
-                                <div class="text-sm text-gray-900">2개</div>
-                                <div class="text-xs text-gray-500">정면 카메라 (COM1)</div>
-                                <div class="text-xs text-gray-500">측면 카메라 (COM2)</div>
+                                <div
+                                    v-for="camera in boothItem.cameras"
+                                    :key="camera.id"
+                                    class="text-xs text-gray-500"
+                                >
+                                    {{ camera.name }}
+                                </div>
+
                                 <button
                                     class="text-xs text-blue-600 hover:text-blue-800 cursor-pointer"
                                 >
@@ -75,8 +80,13 @@
                             </div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="text-sm text-gray-900">1개</div>
-                            <div class="text-xs text-gray-500">WM-2000 Pro</div>
+                            <div
+                                v-for="welder in boothItem.welders"
+                                :key="welder.id"
+                                class="text-xs text-gray-500"
+                            >
+                                {{ welder.name }}
+                            </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {{ boothItem.updated_at || '' }}
@@ -103,12 +113,11 @@
 </template>
 
 <script setup lang="ts">
-import type { Booth } from '@/api/Booth.ts'
+import type { BoothResponseItem } from '@/api/Booth.ts'
 import { toRefs } from 'vue'
-import type { Camera } from '@/api/Camera.ts'
 
-const props = defineProps<{ booth: Booth[]; cameras: Camera[] }>()
-const { booth, cameras } = toRefs(props)
+const props = defineProps<{ booth: BoothResponseItem[] }>()
+const { booth } = toRefs(props)
 </script>
 
 <style scoped lang="scss"></style>
