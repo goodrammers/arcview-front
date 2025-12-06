@@ -87,8 +87,8 @@
 <script setup lang="ts">
 import { toRefs } from 'vue'
 import type { Welder } from '@/api/Welder.ts'
-import type { Booth } from '@/api/Booth.ts'
-const props = defineProps<{ welders: Welder[]; booth: Booth[] }>()
+import type { BoothResponseItem } from '@/api/Booth.ts'
+const props = defineProps<{ welders: Welder[]; booth: BoothResponseItem[] }>()
 const { welders, booth } = toRefs(props)
 function boothName(welderItem: Welder) {
     const foundBooth = booth.value.find((value) => value.id === welderItem.booth_id)

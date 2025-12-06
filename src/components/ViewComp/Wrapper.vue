@@ -5,7 +5,6 @@
                 :is="selectedComp"
                 :index="index"
                 :videoIndex="videoIndex"
-                :isRoi="_isRoi"
                 :key="selectedComp"
             ></component>
         </keep-alive>
@@ -20,17 +19,19 @@
                 ></VBtn>
             </template>
             <VList>
-                <VListItem class="cursor-pointer" @click="() => setVideo(0, false)">
+                <VListItem
+                    :disabled="!isVideoExist(0)"
+                    class="cursor-pointer"
+                    @click="() => setVideo(0)"
+                >
                     영상1
                 </VListItem>
-                <VListItem class="cursor-pointer" @click="() => setVideo(0, true)">
-                    영상1(ROI)
-                </VListItem>
-                <VListItem class="cursor-pointer" @click="() => setVideo(1, false)">
+                <VListItem
+                    :disabled="!isVideoExist(1)"
+                    class="cursor-pointer"
+                    @click="() => setVideo(1)"
+                >
                     영상2
-                </VListItem>
-                <VListItem class="cursor-pointer" @click="() => setVideo(1, true)">
-                    영상2(ROI)
                 </VListItem>
                 <VListItem class="cursor-pointer" @click="() => setMetaChart()">
                     차트 보기
@@ -43,18 +44,24 @@
 <script setup lang="ts">
 import Video from '@/components/ViewComp/Video.vue'
 import MetaChart from '@/components/ViewComp/MetaChart.vue'
-import type { Component } from 'vue'
-
+import { type Component } from 'vue'
 import { ref, shallowRef, toRefs } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useWeldingStore } from '@/store/Welding.ts'
 
 const props = defineProps<{ index: number }>()
 const { index } = toRefs(props)
 const selectedComp = shallowRef<Component | null>(null)
 const videoIndex = ref(0)
-const _isRoi = ref(false)
+const { currentJob } = storeToRefs(useWeldingStore())
+function isVideoExist(index: number) {
+    if (currentJob.value && currentJob.value.videos.length > index) {
+        return currentJob.value.videos[index].file_path !== ''
+    }
+    return false
+}
 
-function setVideo(index: number, isRoi: boolean) {
-    _isRoi.value = isRoi
+function setVideo(index: number) {
     videoIndex.value = index
     selectedComp.value = Video
 }

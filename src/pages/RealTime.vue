@@ -7,25 +7,41 @@
                     <div>
                         <select
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm pr-8"
+                            @change="onBoothSelected"
                         >
-                            <option value="">작업실을 선택</option>
-                            <option value="1">1호 작업실</option>
-                            <option value="2">2호 작업실</option>
-                            <option value="3">3호 작업실</option>
+                            <option value="">작업실 선택</option>
+                            <option v-for="b in boothSelectors" :key="b.id" :value="b.id">
+                                {{ b.name }}
+                            </option>
                         </select>
                     </div>
                     <div>
                         <select
-                            disabled
+                            :disabled="cameraSelectors.length === 0"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm pr-8 disabled:bg-gray-100"
+                            @change="onCameraSelected"
                         >
                             <option value="">카메라 선택</option>
+                            <option
+                                v-for="camera in cameraSelectors"
+                                :key="camera.id"
+                                :value="camera.id"
+                            >
+                                {{ camera.name }}
+                            </option>
                         </select>
                     </div>
                 </div>
             </div>
-            <div class="bg-white rounded-lg border border-gray-200 py-6 px-10">
-                <div class="relative bg-black rounded-lg overflow-hidden" style="height: 660px">
+
+            <div
+                class="bg-white rounded-lg border border-gray-200 py-6 px-10"
+                style="display: flex"
+            >
+                <div
+                    class="relative bg-black rounded-lg overflow-hidden"
+                    style="height: 660px; width: 1000px"
+                >
                     <video
                         ref="videoEl"
                         muted
@@ -46,29 +62,97 @@
                         </div>
                     </div>
                 </div>
+                <div style="width: 400px; margin-left: 20px; color: black; padding: 20px">
+                    <div>current: {{ realtimeData[realtimeData.length - 1]?.current }}</div>
+                    <div>voltage: {{ realtimeData[realtimeData.length - 1]?.voltage }}</div>
+                    <div>
+                        feeding speed:
+                        {{ realtimeData[realtimeData.length - 1]?.wire_feeding_speed }}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-const videoEl = ref<HTMLVideoElement>()
-const videoConnected = ref(false)
+import { computed, ref, watch } from 'vue'
+import { getRealtimeBooth, type RealTimeBoothItem } from '@/api/Realtime.ts'
+import { usePlayer } from '@/composables/Player.ts'
 
-function connect(url: string) {
-    videoConnected.value = true
-    const video = videoEl.value
-    // @ts-ignore
-    let player = new window.RtcWhepAsyncPlayer(url)
-    if (video) {
-        video.srcObject = player.stream
-    }
-    player.play()
+interface RealtimeWelder {
+    welder_id: number
+    current: number
+    timestamp: number
+    voltage: number
+    wire_feeding_speed: number
 }
 
-onMounted(() => {
-    connect('http://192.168.0.64:1985/rtc/v1/whep/?app=live&stream=Cam-01')
+const videoEl = ref<HTMLVideoElement>()
+const videoConnected = ref(false)
+const booths = ref<RealTimeBoothItem[]>([])
+const boothSelectors = computed(() => {
+    return booths.value.map((value) => ({ id: value.id, name: value.name }))
+})
+const cameraSelectors = computed(() => {
+    const selected = booths.value.find((value) => value.id === +selectedBooth.value)
+    if (selected) {
+        return selected.cameras.map((value) => ({ id: value.id, name: value.name }))
+    }
+    return []
+})
+const selectedBooth = ref('')
+const selectedCamera = ref<{ id: number; name: string; welder_id: number } | undefined>(undefined)
+const realtimeData = ref<RealtimeWelder[]>([])
+const MAX_DATA_LENGTH = 30
+
+const { changeCam, setVideoEl } = usePlayer()
+
+const ws = new WebSocket(`${window.location.origin.replace('http', 'ws')}/realtime`)
+ws.onmessage = (event) => {
+    const data = JSON.parse(event.data) as RealtimeWelder
+    if (selectedCamera.value) {
+        if (selectedCamera.value.welder_id === data.welder_id) {
+            realtimeData.value.push(data)
+            if (realtimeData.value.length > MAX_DATA_LENGTH) {
+                realtimeData.value.shift()
+            }
+        }
+    }
+}
+
+function connect() {
+    if (!selectedCamera.value) {
+        return
+    }
+    videoConnected.value = true
+    const video = videoEl.value
+    changeCam(selectedCamera.value.id)
+    setVideoEl(video!)
+}
+
+function onBoothSelected(e: Event) {
+    selectedBooth.value = (e.target as HTMLSelectElement).value
+}
+function onCameraSelected(e: Event) {
+    const cameraId = (e.target as HTMLSelectElement).value
+
+    const booth = booths.value.find((value) => value.id === +selectedBooth.value)
+    if (booth) {
+        selectedCamera.value = booth.cameras.find((value) => value.id === +cameraId)
+    }
+}
+
+async function fetchItems() {
+    booths.value = await getRealtimeBooth()
+}
+
+fetchItems()
+
+watch(selectedCamera, () => {
+    if (selectedCamera.value) {
+        connect()
+    }
 })
 </script>
 

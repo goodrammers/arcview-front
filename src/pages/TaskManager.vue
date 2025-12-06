@@ -44,12 +44,12 @@
 import { ref } from 'vue'
 import TaskManagerWorks from '@/pages/TaskManagerWorks.vue'
 import TaskManagerWelder from '@/pages/TaskManagerWelder.vue'
-import { type Booth, fetchBooths } from '@/api/Booth.ts'
+import { type BoothResponseItem, fetchBooths } from '@/api/Booth.ts'
 import { type Camera, fetchCameras } from '@/api/Camera.ts'
 import { fetchWelders, type Welder } from '@/api/Welder.ts'
 
 const selectedTab = ref(0)
-const booth = ref<Booth[]>([])
+const booth = ref<BoothResponseItem[]>([])
 const cameras = ref<Camera[]>([])
 const welders = ref<Welder[]>([])
 
@@ -59,8 +59,9 @@ function selectTab(index: number) {
 
 async function init() {
     booth.value = await fetchBooths()
-    cameras.value = await fetchCameras()
-    welders.value = await fetchWelders()
+
+    // cameras.value = await fetchCameras()
+    // welders.value = await fetchWelders()
 }
 
 init()
