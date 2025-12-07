@@ -43,25 +43,18 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import TaskManagerWorks from '@/pages/TaskManager/TaskManagerWorks.vue'
-import TaskManagerWelder from '@/pages/TaskManagerWelder.vue'
-import { type Camera, fetchCameras } from '@/api/Camera.ts'
-import { type Welder } from '@/api/Welder.ts'
-
+import TaskManagerWelder from '@/pages/TaskManager/TaskManagerWelder.vue'
 import { useTaskItems } from '@/pages/TaskManager/TaskItems.ts'
 
 const selectedTab = ref(0)
 
-const { fetchBooths } = useTaskItems()
-
-const cameras = ref<Camera[]>([])
-const welders = ref<Welder[]>([])
-
+const { fetchBooths, fetchWelders } = useTaskItems()
 function selectTab(index: number) {
     selectedTab.value = index
 }
 
 async function fetchItems() {
-    await Promise.all([fetchBooths()])
+    await Promise.all([fetchBooths(), fetchWelders()])
 }
 
 fetchItems()

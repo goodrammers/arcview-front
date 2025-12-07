@@ -117,8 +117,8 @@
 </template>
 
 <script setup lang="ts">
-import { type BoothResponseItem, deleteBooth } from '@/api/Booth.ts'
-import { ref, toRefs } from 'vue'
+import { deleteBooth } from '@/api/Booth.ts'
+import { ref } from 'vue'
 import EditBooth from '@/pages/TaskManager/EditBooth.vue'
 import { storeToRefs } from 'pinia'
 import { useTaskItems } from '@/pages/TaskManager/TaskItems.ts'
@@ -132,6 +132,7 @@ const selectedBoothId = ref(-1)
 
 function createBooth() {
     dlg.value = true
+    selectedBoothId.value = -1
     boothEditMode.value = 'create'
 }
 

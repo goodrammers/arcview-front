@@ -1,11 +1,11 @@
 <template>
     <div class="container">
-        <h2>{{ mode === 'create' ? '작업실 추가' : '작업실 수정' }}</h2>
-        <p class="label">작업실 이름</p>
+        <h2>{{ mode === 'create' ? '용접기 추가' : '용접기 수정' }}</h2>
+        <p class="label">용접기 이름</p>
         <input
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
             type="text"
-            v-model="boothName"
+            v-model="welderName"
         />
 
         <p class="label">설명</p>
@@ -15,13 +15,12 @@
             v-model="description"
         ></textarea>
 
-        <p class="label">용접기</p>
-        <select
-            v-model="selectedWelder"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm pr-8"
-        >
-            <option v-for="welder in welders" :value="welder.id">{{ welder.name }}</option>
-        </select>
+        <p class="label">IP</p>
+        <input
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            type="text"
+            v-model="ipAddress"
+        />
 
         <!-- 카메라 -->
         <p class="label">카메라</p>
@@ -91,28 +90,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, toRefs } from 'vue'
 import BaseButton from '@/shared/ui/BaseButton.vue'
-import { getWelders, type Welder } from '@/api/Welder.ts'
-import { ResultCode } from '@/api/Types.ts'
-import { postBooth, putBooth } from '@/api/Booth.ts'
+import { computed, ref, toRefs } from 'vue'
+import { type Camera, getCameras } from '@/api/Camera.ts'
 import { storeToRefs } from 'pinia'
 import { useTaskItems } from '@/pages/TaskManager/TaskItems.ts'
-import { type Camera, getCameras } from '@/api/Camera.ts'
-
-const props = defineProps<{ mode: 'create' | 'edit'; boothId: number }>()
-const { mode, boothId } = toRefs(props)
+import { ResultCode } from '@/api/Types.ts'
+import { postWelder, putWelder } from '@/api/Welder.ts'
+const props = defineProps<{ mode: 'create' | 'edit'; welderId: number }>()
 const emits = defineEmits<{
     (e: 'close'): void
 }>()
-const welders = ref<Welder[]>([])
-const cameras = ref<Camera[]>([])
-const { booths } = storeToRefs(useTaskItems())
-const boothName = ref('')
+const { mode, welderId } = toRefs(props)
+const welderName = ref('')
 const description = ref('')
-const selectedWelder = ref(-1)
+const ipAddress = ref('')
+const { welders } = storeToRefs(useTaskItems())
 const isCameraSelectOpen = ref(false)
-const currentBooth = computed(() => booths.value.find((value) => value.id === boothId.value))
+const cameras = ref<Camera[]>([])
 const selectedCameras = ref<number[]>([])
 const selectedCameraText = computed(() => {
     if (selectedCameras.value.length === 0) {
@@ -127,28 +122,22 @@ const selectedCameraText = computed(() => {
     const c = cameras.value.filter((value) => selectedCameras.value.includes(value.id))
     return c.map((value) => value.name).join(',')
 })
-
+const currentWelder = computed(() => welders.value.find((value) => value.id === welderId.value))
 const disabled = computed(() => {
-    if (boothName.value === '') {
+    if (welderName.value === '' || ipAddress.value === '') {
         return true
     }
-    if (mode.value === 'edit' && currentBooth.value) {
-        if (boothName.value !== currentBooth.value.name) {
+    if (mode.value === 'edit' && currentWelder.value) {
+        if (welderName.value !== currentWelder.value.name) {
             return false
         }
-        if (description.value !== currentBooth.value.location) {
+        if (description.value !== currentWelder.value.description) {
             return false
         }
-        const welders = currentBooth.value.welders
-        if (selectedWelder.value >= 0) {
-            if (welders.length === 0 || welders[0].id !== selectedWelder.value) {
-                return false
-            }
-        } else if (welders.length > 0) {
-            // 취소 하는 경우
+        if (ipAddress.value !== currentWelder.value.ip_address) {
             return false
         }
-        const cameras = currentBooth.value.cameras
+        const cameras = currentWelder.value.cameras
         if (selectedCameras.value.length !== cameras.length) {
             return false
         } else {
@@ -168,86 +157,16 @@ const disabled = computed(() => {
     return false
 })
 
-async function fetchWelders() {
-    // @ts-ignore
-    welders.value = [{ id: -1, name: '용접기를 선택해주세요' }]
-    if (mode.value === 'edit' && currentBooth.value && currentBooth.value.welders.length > 0) {
-        // @ts-ignore
-        welders.value.push(currentBooth.value.welders[0])
-    }
-    const r = await getWelders({ booth_id: -1 })
-    if (r.code === ResultCode.SUCCESS && r.data) {
-        welders.value.push(...r.data)
-    }
-}
-
 async function fetchCameras() {
-    if (mode.value === 'edit' && currentBooth.value && currentBooth.value.cameras.length > 0) {
+    if (mode.value === 'edit' && currentWelder.value && currentWelder.value.cameras.length > 0) {
         // @ts-ignore
-        cameras.value.push(...currentBooth.value.cameras)
+        cameras.value.push(...currentWelder.value.cameras)
     }
-    const r = await getCameras({ booth_id: -1 })
+    const r = await getCameras({ welder_id: -1 })
     if (r.code === ResultCode.SUCCESS && r.data) {
         cameras.value.push(...r.data)
     }
 }
-
-function onCancel() {
-    emits('close')
-}
-async function onOk() {
-    if (boothName.value === '') {
-        alert('작업실의 이름을 설정하세요')
-        return
-    }
-    if (mode.value === 'create') {
-        const r = await postBooth({
-            name: boothName.value,
-            location: description.value,
-            camera_ids: selectedCameras.value,
-            welder_id: selectedWelder.value,
-        })
-        if (r.code !== ResultCode.SUCCESS) {
-            if (r.code === ResultCode.DUPLICATE_DATA) {
-                alert('같은 이름의 작업실이 이미 존재합니다.')
-            } else {
-                alert('생성에 실패하였습니다.')
-            }
-        } else {
-            alert(boothName.value + '가 생성되었습니다.')
-        }
-    } else {
-        const r = await putBooth({
-            id: currentBooth.value!.id,
-            name: boothName.value,
-            location: description.value,
-            camera_ids: selectedCameras.value,
-            welder_id: selectedWelder.value,
-        })
-        if (r.code !== ResultCode.SUCCESS) {
-            if (r.code === ResultCode.DUPLICATE_DATA) {
-                alert('같은 이름의 작업실이 이미 존재합니다.')
-            } else {
-                alert('수정에 실패하였습니다.')
-            }
-        } else {
-            alert(boothName.value + '가 수정되었습니다.')
-        }
-    }
-    await useTaskItems().fetchBooths()
-    emits('close')
-}
-function initEditMode() {
-    if (mode.value === 'edit' && currentBooth.value) {
-        boothName.value = currentBooth.value.name
-        description.value = currentBooth.value.location
-        if (currentBooth.value.welders.length > 0) {
-            selectedWelder.value = currentBooth.value.welders[0].id
-        }
-        selectedCameras.value = currentBooth.value.cameras.map((value) => value.id)
-    }
-}
-
 function toggleCameraSelection(id: number) {
     const index = selectedCameras.value.indexOf(id)
     if (index === -1) {
@@ -256,7 +175,54 @@ function toggleCameraSelection(id: number) {
         selectedCameras.value.splice(index, 1)
     }
 }
-fetchWelders()
+
+function initEditMode() {
+    if (mode.value === 'edit' && currentWelder.value) {
+        const w = currentWelder.value
+        welderName.value = w.name
+        description.value = w.description || ''
+        ipAddress.value = w.ip_address
+        selectedCameras.value = w.cameras.map((value) => value.id)
+    }
+}
+
+function onCancel() {
+    emits('close')
+}
+
+async function onOk() {
+    if (mode.value === 'create') {
+        const r = await postWelder({
+            booth_id: -1,
+            camera_ids: selectedCameras.value,
+            description: description.value,
+            ip_address: ipAddress.value,
+            name: welderName.value,
+        })
+        if (r.code !== ResultCode.SUCCESS) {
+            alert('용접기 생성에 실패하였습니다.')
+        } else {
+            alert('용접기가 생성되었습니다.')
+        }
+    } else if (currentWelder.value) {
+        const r = await putWelder({
+            id: currentWelder.value.id,
+            booth_id: currentWelder.value.booth_id,
+            camera_ids: selectedCameras.value,
+            description: description.value,
+            ip_address: ipAddress.value,
+            name: welderName.value,
+        })
+        if (r.code !== ResultCode.SUCCESS) {
+            alert('용접기 수정에 실패하였습니다.')
+        } else {
+            alert('용접기가 수정되었습니다.')
+        }
+    }
+    await useTaskItems().fetchWelders()
+    emits('close')
+}
+
 fetchCameras()
 initEditMode()
 </script>
