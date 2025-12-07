@@ -1,7 +1,7 @@
 import type { ApiBaseResponse } from '@/api/Types.ts'
 import axios, { type AxiosRequestHeaders } from 'axios'
 
-interface QueryParams {
+export interface QueryParams {
     [key: string]: string | number | boolean | string[] | undefined | null
 }
 
@@ -58,6 +58,18 @@ export async function axiosPut<T>(
     headers?: AxiosRequestHeaders
 ) {
     const response = await axios.put(endpoint, body, {
+        headers,
+    })
+
+    return response.data as ApiBaseResponse<T>
+}
+export async function axiosDelete<T>(
+    endpoint: string,
+    body?: Record<string, any>,
+    headers?: AxiosRequestHeaders
+) {
+    const response = await axios.delete(endpoint, {
+        data: body,
         headers,
     })
 

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { axiosDelete, axiosGet, axiosPost, axiosPut } from '@/api/Axios.ts'
 
 export interface BoothResponseItem {
     id: number
@@ -17,14 +18,23 @@ export interface BoothResponseItem {
         name: string
     }[]
 }
+
+export interface PostBoothParam {
+    name: string
+    location: string
+    camera_ids: number[]
+    welder_id: number
+}
+
 const api = axios.create({
     baseURL: '/api',
 })
 
 // 전체 목록 조회 (GET /api/booths)
-export async function fetchBooths(): Promise<BoothResponseItem[]> {
-    const res = await api.get<BoothResponseItem[]>('/booths')
-    return res.data
+export async function getBooths() {
+    return axiosGet<BoothResponseItem[]>('/api/booths')
+    // const res = await api.get<BoothResponseItem[]>('/booths')
+    // return res.data
 }
 
 // 단일 조회 (GET /api/booths/:id)
@@ -33,18 +43,18 @@ export async function fetchBoothById(id: number): Promise<BoothResponseItem> {
     return res.data
 }
 
-// 생성 (POST /api/booths)
-export async function createBooth(data: BoothResponseItem): Promise<BoothResponseItem> {
-    const res = await api.post<BoothResponseItem>('/booths', data)
-    return res.data
-}
-
 // 수정 (PUT /api/booths)
 export async function updateBooth(data: BoothResponseItem): Promise<void> {
     await api.put('/booths', data)
 }
 
-// 삭제 (DELETE /api/booths/:id)
-export async function deleteBooth(id: number): Promise<void> {
-    await api.delete(`/booths/${id}`)
+export async function postBooth(param: PostBoothParam) {
+    return axiosPost<undefined>('/api/booth', param)
+}
+export async function putBooth(param: PostBoothParam & { id: number }) {
+    return axiosPut<undefined>('/api/booth', param)
+}
+
+export async function deleteBooth(id: number) {
+    return axiosDelete<undefined>('/api/booth', { id })
 }
