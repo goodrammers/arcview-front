@@ -79,6 +79,7 @@
 import { computed, ref, watch } from 'vue'
 import { getRealtimeBooth, type RealTimeBoothItem } from '@/api/Realtime.ts'
 import { usePlayer } from '@/composables/Player.ts'
+import { ResultCode } from '@/api/Types.ts'
 
 interface RealtimeWelder {
     welder_id: number
@@ -144,7 +145,12 @@ function onCameraSelected(e: Event) {
 }
 
 async function fetchItems() {
-    booths.value = await getRealtimeBooth()
+    const r = await getRealtimeBooth()
+    if (r.code === ResultCode.SUCCESS && r.data) {
+        booths.value = r.data
+    } else {
+        booths.value = []
+    }
 }
 
 fetchItems()

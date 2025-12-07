@@ -4,7 +4,7 @@ export function usePlayer() {
     const camId = ref('')
     const url = computed(() =>
         camId.value
-            ? `http://192.168.0.64:1985/rtc/v1/whep/?app=live&stream=cam-${camId.value}`
+            ? `http://192.168.0.77:1985/rtc/v1/whep/?app=live&stream=cam-${camId.value}`
             : ''
     )
     const isPlaying = ref(false)
