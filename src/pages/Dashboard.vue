@@ -12,12 +12,17 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import DashboardTable from '@/pages/DashboardTable.vue'
-import { geJobs, type Job } from '@/api/Jobs.ts'
+import { getJobs, type Job } from '@/api/Jobs.ts'
 
 const jobs = ref<Job[]>([])
 
 async function init() {
-    jobs.value = await geJobs()
+    const r = await getJobs()
+    if (r.code && r.data) {
+        jobs.value = r.data
+    } else {
+        jobs.value = []
+    }
 }
 init()
 </script>

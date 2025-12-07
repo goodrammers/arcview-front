@@ -1,8 +1,4 @@
-import axios from 'axios'
-
-const api = axios.create({
-    baseURL: '/api',
-})
+import { axiosGet, type QueryParams } from '@/api/Axios.ts'
 
 export interface Job {
     id: number
@@ -32,12 +28,10 @@ export interface JobResponse {
     measurements: JobMeasurement[]
 }
 
-export async function geJobs(): Promise<Job[]> {
-    const res = await api.get<Job[]>('/jobs')
-    return res.data
+export async function getJobs(query: QueryParams = {}) {
+    return axiosGet<Job[]>('/api/jobs', query)
 }
 
 export async function getJobById(id: number | string) {
-    const res = await api.get(`/job/${id}`)
-    return res.data as JobResponse
+    return axiosGet<JobResponse>(`/api/job/${id}`)
 }
