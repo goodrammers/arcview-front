@@ -4,12 +4,13 @@
             <h2 class="text-lg font-semibold text-gray-900">작업실 목록</h2>
             <button
                 class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 whitespace-nowrap cursor-pointer"
+                @click="createBooth"
             >
                 작업실 추가
             </button>
         </div>
         <div
-            v-if="booth.length === 0"
+            v-if="booths.length === 0"
             class="bg-white border border-gray-200 rounded-lg p-12 text-center"
         >
             <div
@@ -51,7 +52,7 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
-                    <tr v-for="boothItem in booth" class="hover:bg-gray-50/50">
+                    <tr v-for="boothItem in booths" class="hover:bg-gray-50/50">
                         <td class="px-6 py-4">
                             <div>
                                 <div class="text-sm font-medium text-gray-900">
@@ -71,12 +72,6 @@
                                 >
                                     {{ camera.name }}
                                 </div>
-
-                                <button
-                                    class="text-xs text-blue-600 hover:text-blue-800 cursor-pointer"
-                                >
-                                    + 카메라 추가
-                                </button>
                             </div>
                         </td>
                         <td class="px-6 py-4">
@@ -95,11 +90,13 @@
                             <div class="flex space-x-2">
                                 <button
                                     class="p-2 text-gray-400 hover:text-blue-600 transition-colors cursor-pointer"
+                                    @click="() => onEditBooth(boothItem.id)"
                                 >
                                     <i class="ri-edit-line"></i>
                                 </button>
                                 <button
                                     class="p-2 text-gray-400 hover:text-red-600 transition-colors cursor-pointer"
+                                    @click="() => onDeleteBooth(boothItem.id)"
                                 >
                                     <i class="ri-delete-bin-line"></i>
                                 </button>
@@ -109,15 +106,53 @@
                 </tbody>
             </table>
         </div>
+        <VDialog width="400" height="500" v-model="dlg">
+            <EditBooth
+                @close="() => (dlg = false)"
+                :boothId="selectedBoothId"
+                :mode="boothEditMode"
+            ></EditBooth>
+        </VDialog>
     </div>
 </template>
 
 <script setup lang="ts">
-import type { BoothResponseItem } from '@/api/Booth.ts'
-import { toRefs } from 'vue'
+import { type BoothResponseItem, deleteBooth } from '@/api/Booth.ts'
+import { ref, toRefs } from 'vue'
+import EditBooth from '@/pages/TaskManager/EditBooth.vue'
+import { storeToRefs } from 'pinia'
+import { useTaskItems } from '@/pages/TaskManager/TaskItems.ts'
+import { ResultCode } from '@/api/Types.ts'
 
-const props = defineProps<{ booth: BoothResponseItem[] }>()
-const { booth } = toRefs(props)
+const { booths } = storeToRefs(useTaskItems())
+const { fetchBooths } = useTaskItems()
+const boothEditMode = ref<'create' | 'edit'>('create')
+const dlg = ref(false)
+const selectedBoothId = ref(-1)
+
+function createBooth() {
+    dlg.value = true
+    boothEditMode.value = 'create'
+}
+
+async function onDeleteBooth(id: number) {
+    const ok = confirm('해당 작업실을 삭제하시겠습니까?')
+    if (!ok) {
+        return
+    }
+    const r = await deleteBooth(id)
+    if (r.code === ResultCode.SUCCESS) {
+        await fetchBooths()
+    } else {
+        alert('삭제에 실패했습니다.')
+    }
+}
+
+function onEditBooth(id: number) {
+    dlg.value = true
+    selectedBoothId.value = id
+    boothEditMode.value = 'edit'
+}
 </script>
 
 <style scoped lang="scss"></style>

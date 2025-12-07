@@ -4,7 +4,7 @@ import Dashboard from '@/pages/Dashboard.vue'
 import MainLayout from '@/layout/MainLayout.vue'
 import RealTime from '@/pages/RealTime.vue'
 import Admin from '@/pages/Admin.vue'
-import TaskManager from '@/pages/TaskManager.vue'
+import TaskManager from '@/pages/TaskManager/TaskManager.vue'
 
 const routes: Array<RouteRecordRaw> = [
     {

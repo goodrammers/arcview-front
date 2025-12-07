@@ -11,4 +11,6 @@ export interface ApiBaseResponse<T> {
 
 export const ResultCode = {
     SUCCESS: 200,
+
+    DUPLICATE_DATA: 1003,
 }
