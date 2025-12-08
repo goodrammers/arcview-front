@@ -23,64 +23,6 @@
             <option v-for="welder in welders" :value="welder.id">{{ welder.name }}</option>
         </select>
 
-        <!-- 카메라 -->
-        <p class="label">카메라</p>
-        <div
-            @click="isCameraSelectOpen = !isCameraSelectOpen"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white cursor-pointer flex items-center justify-between min-h-[42px]"
-            :class="{ 'ring-2 ring-blue-500 border-blue-500': isCameraSelectOpen }"
-        >
-            <span class="text-sm text-gray-900 truncate select-none">
-                {{ selectedCameraText }}
-            </span>
-
-            <svg
-                class="w-4 h-4 text-gray-500 transition-transform"
-                :class="{ 'rotate-180': isCameraSelectOpen }"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 9l-7 7-7-7"
-                />
-            </svg>
-        </div>
-
-        <div
-            v-if="isCameraSelectOpen"
-            class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
-        >
-            <div
-                v-for="camera in cameras"
-                :key="camera.id"
-                class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                @click.stop="toggleCameraSelection(camera.id)"
-            >
-                <input
-                    type="checkbox"
-                    :checked="selectedCameras.includes(camera.id)"
-                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 pointer-events-none"
-                />
-                <span class="ml-2 text-sm text-gray-700 select-none">
-                    {{ camera.name }}
-                </span>
-            </div>
-
-            <div v-if="cameras.length === 0" class="px-3 py-2 text-sm text-gray-500">
-                선택 가능한 카메라가 없습니다.
-            </div>
-        </div>
-
-        <div
-            v-if="isCameraSelectOpen"
-            @click="isCameraSelectOpen = false"
-            class="fixed inset-0 z-0 bg-transparent cursor-default"
-        ></div>
-
         <div class="actions">
             <BaseButton flex-grow @click="onCancel">취소</BaseButton>
             <BaseButton :disabled="disabled" colored flex-grow @click="onOk">
@@ -111,22 +53,7 @@ const { booths } = storeToRefs(useTaskItems())
 const boothName = ref('')
 const description = ref('')
 const selectedWelder = ref(-1)
-const isCameraSelectOpen = ref(false)
 const currentBooth = computed(() => booths.value.find((value) => value.id === boothId.value))
-const selectedCameras = ref<number[]>([])
-const selectedCameraText = computed(() => {
-    if (selectedCameras.value.length === 0) {
-        return '카메라를 선택하세요'
-    }
-
-    // 선택된 ID에 해당하는 이름을 찾아서 콤마로 연결
-
-    if (cameras.value.length === 0) {
-        return ''
-    }
-    const c = cameras.value.filter((value) => selectedCameras.value.includes(value.id))
-    return c.map((value) => value.name).join(',')
-})
 
 const disabled = computed(() => {
     if (boothName.value === '') {
@@ -148,20 +75,6 @@ const disabled = computed(() => {
             // 취소 하는 경우
             return false
         }
-        const cameras = currentBooth.value.cameras
-        if (selectedCameras.value.length !== cameras.length) {
-            return false
-        } else {
-            let diff = false
-            selectedCameras.value.forEach((value) => {
-                if (!cameras.find((c) => c.id === value)) {
-                    diff = true
-                }
-            })
-            if (diff) {
-                return false
-            }
-        }
 
         return true
     }
@@ -181,17 +94,6 @@ async function fetchWelders() {
     }
 }
 
-async function fetchCameras() {
-    if (mode.value === 'edit' && currentBooth.value && currentBooth.value.cameras.length > 0) {
-        // @ts-ignore
-        cameras.value.push(...currentBooth.value.cameras)
-    }
-    const r = await getCameras({ booth_id: -1 })
-    if (r.code === ResultCode.SUCCESS && r.data) {
-        cameras.value.push(...r.data)
-    }
-}
-
 function onCancel() {
     emits('close')
 }
@@ -204,7 +106,6 @@ async function onOk() {
         const r = await postBooth({
             name: boothName.value,
             location: description.value,
-            camera_ids: selectedCameras.value,
             welder_id: selectedWelder.value,
         })
         if (r.code !== ResultCode.SUCCESS) {
@@ -221,7 +122,6 @@ async function onOk() {
             id: currentBooth.value!.id,
             name: boothName.value,
             location: description.value,
-            camera_ids: selectedCameras.value,
             welder_id: selectedWelder.value,
         })
         if (r.code !== ResultCode.SUCCESS) {
@@ -244,20 +144,10 @@ function initEditMode() {
         if (currentBooth.value.welders.length > 0) {
             selectedWelder.value = currentBooth.value.welders[0].id
         }
-        selectedCameras.value = currentBooth.value.cameras.map((value) => value.id)
     }
 }
 
-function toggleCameraSelection(id: number) {
-    const index = selectedCameras.value.indexOf(id)
-    if (index === -1) {
-        selectedCameras.value.push(id)
-    } else {
-        selectedCameras.value.splice(index, 1)
-    }
-}
 fetchWelders()
-fetchCameras()
 initEditMode()
 </script>
 
