@@ -77,7 +77,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { getRealtimeBooth, type RealTimeBoothItem } from '@/api/Realtime.ts'
+import { getRealtimeBooth, getServerAddress, type RealTimeBoothItem } from '@/api/Realtime.ts'
 import { usePlayer } from '@/composables/Player.ts'
 import { ResultCode } from '@/api/Types.ts'
 
@@ -106,8 +106,9 @@ const selectedBooth = ref('')
 const selectedCamera = ref<{ id: number; name: string; welder_id: number } | undefined>(undefined)
 const realtimeData = ref<RealtimeWelder[]>([])
 const MAX_DATA_LENGTH = 30
+const serverAddress = ref('')
 
-const { changeCam, setVideoEl } = usePlayer()
+const { changeCam, setVideoEl } = usePlayer(serverAddress)
 
 const ws = new WebSocket(`${window.location.origin.replace('http', 'ws')}/realtime`)
 ws.onmessage = (event) => {
@@ -152,7 +153,15 @@ async function fetchItems() {
         booths.value = []
     }
 }
-
+async function fetchAddress() {
+    const r = await getServerAddress()
+    if (r.code === ResultCode.SUCCESS && r.data) {
+        serverAddress.value = r.data.ip
+    } else {
+        serverAddress.value = ''
+    }
+}
+fetchAddress()
 fetchItems()
 
 watch(selectedCamera, () => {

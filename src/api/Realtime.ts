@@ -9,3 +9,7 @@ export interface RealTimeBoothItem {
 export async function getRealtimeBooth() {
     return axiosGet<RealTimeBoothItem[]>('/api/realtime-booth')
 }
+
+export async function getServerAddress() {
+    return axiosGet<{ ip: string }>('/api/server-address')
+}
