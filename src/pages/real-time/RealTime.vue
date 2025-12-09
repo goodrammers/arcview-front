@@ -41,30 +41,49 @@
                         </div>
                     </div>
 
-                    <div v-show="isFullScreen" class="bottom-overlay">
-                        <div class="bottom-data-container">
-                            <div class="data-item">
-                                <span class="label">Current</span>
-                                <span class="value">
-                                    {{ realtimeData[realtimeData.length - 1]?.current ?? '-' }} A
-                                </span>
+                    <div v-show="isFullScreen && videoConnected" class="fullscreen-text-overlay">
+                        <div class="data-box">
+                            <div class="overlay-row">
+                                <span class="label">Current:</span>
+                                <span class="value">{{ currentVal }} A</span>
                             </div>
-                            <div class="data-item">
-                                <span class="label">Voltage</span>
-                                <span class="value">
-                                    {{ realtimeData[realtimeData.length - 1]?.voltage ?? '-' }} V
-                                </span>
+                            <div class="overlay-row">
+                                <span class="label">Voltage:</span>
+                                <span class="value">{{ voltageVal }} V</span>
                             </div>
-                            <div class="data-item">
-                                <span class="label">Speed</span>
-                                <span class="value">
-                                    {{
-                                        realtimeData[realtimeData.length - 1]?.wire_feeding_speed ??
-                                        '-'
-                                    }}
-                                    m/min
-                                </span>
+                            <div class="overlay-row">
+                                <span class="label">Speed:</span>
+                                <span class="value">{{ speedVal }} m/min</span>
                             </div>
+                        </div>
+                    </div>
+
+                    <div
+                        v-if="isFullScreen && videoConnected"
+                        class="fullscreen-chart-overlay group/chart"
+                    >
+                        <div class="chart-controls-overlay">
+                            <label
+                                v-for="opt in metricOptions"
+                                :key="opt.key"
+                                class="metric-checkbox-overlay"
+                                :class="{ 'is-active': selectedMetrics.includes(opt.key) }"
+                                :style="{ '--active-color': opt.color }"
+                            >
+                                <input
+                                    type="checkbox"
+                                    :value="opt.key"
+                                    :checked="selectedMetrics.includes(opt.key)"
+                                    @change="onMetricChange(opt.key)"
+                                    class="hidden"
+                                />
+                                <span class="dot" :style="{ backgroundColor: opt.color }"></span>
+                                {{ opt.label }}
+                            </label>
+                        </div>
+
+                        <div class="canvas-wrapper">
+                            <canvas ref="chartCanvasRef"></canvas>
                         </div>
                     </div>
 
@@ -76,23 +95,42 @@
                 </div>
 
                 <div class="data-sidebar" v-if="!isFullScreen">
-                    <div class="data-row">
-                        <span class="label">current:</span>
-                        <span class="value">
-                            {{ realtimeData[realtimeData.length - 1]?.current }}
-                        </span>
+                    <div class="chart-controls">
+                        <label
+                            v-for="opt in metricOptions"
+                            :key="opt.key"
+                            class="metric-checkbox"
+                            :class="{ 'is-active': selectedMetrics.includes(opt.key) }"
+                        >
+                            <input
+                                type="checkbox"
+                                :value="opt.key"
+                                :checked="selectedMetrics.includes(opt.key)"
+                                @change="onMetricChange(opt.key)"
+                                class="hidden"
+                            />
+                            <span class="dot" :style="{ backgroundColor: opt.color }"></span>
+                            {{ opt.label }}
+                        </label>
                     </div>
-                    <div class="data-row">
-                        <span class="label">voltage:</span>
-                        <span class="value">
-                            {{ realtimeData[realtimeData.length - 1]?.voltage }}
-                        </span>
+
+                    <div class="chart-wrapper">
+                        <canvas ref="chartCanvasRef"></canvas>
                     </div>
-                    <div class="data-row">
-                        <span class="label">feeding speed:</span>
-                        <span class="value">
-                            {{ realtimeData[realtimeData.length - 1]?.wire_feeding_speed }}
-                        </span>
+
+                    <div class="current-values">
+                        <div class="mini-stat">
+                            <span class="lbl">A:</span>
+                            {{ currentVal }}
+                        </div>
+                        <div class="mini-stat">
+                            <span class="lbl">V:</span>
+                            {{ voltageVal }}
+                        </div>
+                        <div class="mini-stat">
+                            <span class="lbl">S:</span>
+                            {{ speedVal }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -101,11 +139,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
+import { computed, ref, shallowRef, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { getRealtimeBooth, getServerAddress, type RealTimeBoothItem } from '@/api/Realtime.ts'
 import { usePlayer } from '@/composables/Player.ts'
 import { ResultCode } from '@/api/Types.ts'
 import BaseSelect from '@/shared/ui/BaseSelect.vue'
+import { Chart, registerables, type ChartConfiguration } from 'chart.js'
+
+Chart.register(...registerables)
 
 interface RealtimeWelder {
     welder_id: number
@@ -115,16 +156,35 @@ interface RealtimeWelder {
     wire_feeding_speed: number
 }
 
+// Chart Options (Y축 고정)
+const metricOptions = [
+    { key: 'current', label: '전류 (A)', color: 'rgb(255, 99, 132)', min: 0, max: 500 },
+    { key: 'voltage', label: '전압 (V)', color: 'rgb(53, 162, 235)', min: 0, max: 60 },
+    // [수정] 속도 최대값 조정 (1/10 스케일링 제거 반영)
+    {
+        key: 'wire_feeding_speed',
+        label: '속도 (m/min)',
+        color: 'rgb(46, 204, 113)',
+        min: 0,
+        max: 250,
+    },
+]
+
+// Refs
 const videoContainerRef = ref<HTMLDivElement>()
 const videoEl = ref<HTMLVideoElement>()
+const chartCanvasRef = ref<HTMLCanvasElement>()
+const chartInstance = shallowRef<Chart | null>(null)
+
 const videoConnected = ref(false)
 const isFullScreen = ref(false)
 const booths = ref<RealTimeBoothItem[]>([])
 const selectedBooth = ref('')
 const selectedCamera = ref<{ id: number; name: string; welder_id: number } | undefined>(undefined)
 const realtimeData = ref<RealtimeWelder[]>([])
-const MAX_DATA_LENGTH = 30
+const MAX_DATA_LENGTH = 20
 const serverAddress = ref('')
+const selectedMetrics = ref<string[]>(['current', 'voltage'])
 
 const cameraSelectors = computed(() => {
     const selected = booths.value.find((value) => value.id === +selectedBooth.value)
@@ -134,19 +194,153 @@ const cameraSelectors = computed(() => {
     return []
 })
 
+// Helpers
+const currentVal = computed(
+    () => realtimeData.value[realtimeData.value.length - 1]?.current?.toFixed(1) ?? '-'
+)
+const voltageVal = computed(
+    () => realtimeData.value[realtimeData.value.length - 1]?.voltage?.toFixed(1) ?? '-'
+)
+const speedVal = computed(
+    () => realtimeData.value[realtimeData.value.length - 1]?.wire_feeding_speed?.toFixed(1) ?? '-'
+)
+
 const { changeCam, setVideoEl } = usePlayer(serverAddress)
 
+// WebSocket
 const ws = new WebSocket(`${window.location.origin.replace('http', 'ws')}/realtime`)
 ws.onmessage = function (event) {
-    const data = JSON.parse(event.data) as RealtimeWelder
+    const rawData = JSON.parse(event.data) as RealtimeWelder
+
+    const data = {
+        ...rawData,
+        current: rawData.current / 10,
+        voltage: rawData.voltage / 10,
+    }
+
     if (selectedCamera.value) {
         if (selectedCamera.value.welder_id === data.welder_id) {
             realtimeData.value.push(data)
             if (realtimeData.value.length > MAX_DATA_LENGTH) {
                 realtimeData.value.shift()
             }
+            updateChart()
         }
     }
+}
+
+// Functions
+
+function initChart() {
+    if (!chartCanvasRef.value) return
+    if (chartInstance.value) chartInstance.value.destroy()
+
+    const gridColor = isFullScreen.value ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'
+    const textColor = isFullScreen.value ? '#ccc' : '#666'
+
+    const config: ChartConfiguration = {
+        type: 'line',
+        data: {
+            labels: Array(MAX_DATA_LENGTH).fill(''),
+            datasets: [],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: { enabled: false },
+            },
+            scales: {
+                x: { display: false },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    grid: { color: gridColor },
+                    ticks: { color: textColor },
+                },
+                y1: {
+                    type: 'linear',
+                    display: false,
+                    position: 'right',
+                    grid: { drawOnChartArea: false },
+                    ticks: { color: textColor },
+                },
+            },
+        },
+    }
+
+    chartInstance.value = new Chart(chartCanvasRef.value, config)
+    if (realtimeData.value.length > 0) updateChart()
+}
+
+function updateChart() {
+    if (!chartInstance.value) return
+
+    const datasets: any[] = []
+    let leftAxisUsed = false
+
+    metricOptions.forEach((opt) => {
+        if (!selectedMetrics.value.includes(opt.key)) return
+
+        const dataPoints = realtimeData.value.map((d) => (d as any)[opt.key])
+        const yAxisID = !leftAxisUsed ? 'y' : 'y1'
+        if (!leftAxisUsed) leftAxisUsed = true
+
+        datasets.push({
+            label: opt.label,
+            data: dataPoints,
+            borderColor: opt.color,
+            backgroundColor: opt.color,
+            borderWidth: 2,
+            pointRadius: 0,
+            tension: 0.3,
+            yAxisID: yAxisID,
+        })
+    })
+
+    chartInstance.value.data.datasets = datasets
+
+    const scales = chartInstance.value.options.scales
+    if (scales && scales.y && scales.y1) {
+        if (datasets.length > 0) {
+            const opt1 = metricOptions.find((o) => o.key === selectedMetrics.value[0])
+            if (opt1) {
+                scales.y.display = true
+                scales.y.min = opt1.min
+                scales.y.max = opt1.max
+                scales.y.ticks = { ...scales.y.ticks, color: opt1.color }
+            }
+        }
+
+        if (datasets.length > 1) {
+            const opt2 = metricOptions.find((o) => o.key === selectedMetrics.value[1])
+            if (opt2) {
+                scales.y1.display = true
+                scales.y1.min = opt2.min
+                scales.y1.max = opt2.max
+                scales.y1.ticks = { ...scales.y1.ticks, color: opt2.color }
+            }
+        } else {
+            scales.y1.display = false
+        }
+    }
+
+    chartInstance.value.update('none')
+}
+
+function onMetricChange(key: string) {
+    const idx = selectedMetrics.value.indexOf(key)
+    if (idx > -1) {
+        selectedMetrics.value.splice(idx, 1)
+    } else {
+        if (selectedMetrics.value.length >= 2) selectedMetrics.value.shift()
+        selectedMetrics.value.push(key)
+    }
+    updateChart()
 }
 
 async function toggleFullscreen() {
@@ -167,9 +361,11 @@ async function toggleFullscreen() {
     }
 }
 
-// Sync state on ESC key
 function onFullscreenChange() {
     isFullScreen.value = !!document.fullscreenElement
+    nextTick(() => {
+        initChart()
+    })
 }
 
 function connect() {
@@ -212,23 +408,28 @@ async function fetchAddress() {
 
 onMounted(() => {
     document.addEventListener('fullscreenchange', onFullscreenChange)
+    fetchAddress()
+    fetchItems()
+    nextTick(() => {
+        initChart()
+    })
 })
 
 onUnmounted(() => {
     document.removeEventListener('fullscreenchange', onFullscreenChange)
+    if (chartInstance.value) chartInstance.value.destroy()
 })
 
 watch(selectedCamera, () => {
     if (selectedCamera.value) {
         connect()
+        realtimeData.value = []
+        updateChart()
     }
 })
-fetchAddress()
-fetchItems()
 </script>
 
 <style scoped lang="scss">
-// Layout Container
 .page-container {
     @apply flex-1 overflow-auto;
 }
@@ -237,7 +438,6 @@ fetchItems()
     @apply p-6;
 }
 
-// Control Card
 .control-card {
     @apply bg-white rounded-lg px-6 py-2 mb-6;
     border: 1px solid #e5e7eb;
@@ -251,14 +451,13 @@ fetchItems()
     }
 }
 
-// Monitor Card
 .monitor-card {
     @apply bg-white rounded-lg py-6 px-10;
     border: 1px solid #e5e7eb;
     display: flex;
 }
 
-// Video Container
+/* Video Container */
 .video-container {
     @apply relative bg-black rounded-lg overflow-hidden;
     width: 1000px;
@@ -278,77 +477,140 @@ fetchItems()
         width: 100%;
         height: 100%;
     }
-
     &.is-hidden {
         width: 0;
         height: 0;
     }
-
     object-fit: contain;
 }
 
-// Overlays
+/* Overlays */
 .no-signal-overlay {
     @apply absolute inset-0 flex items-center justify-center;
-
     .icon-circle {
         @apply w-16 h-16 flex items-center justify-center bg-gray-100 rounded-full mb-4 mx-auto;
     }
 }
 
-.bottom-overlay {
-    @apply absolute bottom-0 left-0 w-full pointer-events-none;
-    @apply bg-gradient-to-t from-black/90 via-black/50 to-transparent;
-    height: 180px;
-    z-index: 10;
-    @apply flex items-end justify-center pb-10;
-}
+/* 전체화면 전용: 좌측 상단 텍스트 */
+.fullscreen-text-overlay {
+    @apply absolute top-6 left-6 z-20 pointer-events-none;
 
-.bottom-data-container {
-    @apply flex gap-10;
+    .data-box {
+        @apply bg-black/50 text-white p-4 rounded-lg backdrop-blur-sm border border-white/10;
+        min-width: 180px;
 
-    .data-item {
-        @apply flex flex-col items-center;
-
-        .label {
-            @apply text-gray-400 text-xs uppercase tracking-wider font-semibold mb-1;
-        }
-
-        .value {
-            @apply text-white text-3xl font-mono font-bold;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        .overlay-row {
+            @apply flex justify-between items-center mb-1 last:mb-0 text-sm;
+            .label {
+                @apply text-gray-300 mr-3 font-medium;
+            }
+            .value {
+                @apply font-mono font-bold text-green-400;
+            }
         }
     }
 }
 
-// Fullscreen Button
+/* 전체화면 전용: 우측 하단 차트 및 컨트롤 */
+.fullscreen-chart-overlay {
+    @apply absolute bottom-6 right-6 z-20;
+    /* [수정] 배경 투명도 높임 (bg-black/30 -> bg-black/10) */
+    @apply bg-black/10 backdrop-blur-md rounded-xl;
+    /* [수정] 테두리 제거 */
+
+    width: 500px;
+    height: 280px;
+    padding: 16px;
+    @apply flex flex-col;
+
+    transition: background-color 0.3s ease;
+    &:hover {
+        /* 호버 시 약간 더 어둡게 */
+        @apply bg-black/30;
+    }
+
+    .chart-controls-overlay {
+        @apply flex gap-2 mb-2 justify-end;
+    }
+
+    .canvas-wrapper {
+        @apply flex-1 relative;
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+    }
+}
+
+/* 전체화면용 체크박스 스타일 */
+.metric-checkbox-overlay {
+    @apply flex items-center px-3 py-1.5 rounded-full border text-xs font-medium cursor-pointer transition-all;
+    @apply bg-white/10 border-white/10 text-gray-300;
+
+    &:hover {
+        @apply bg-white/20;
+    }
+
+    &.is-active {
+        border-color: var(--active-color);
+        color: var(--active-color);
+        @apply bg-black/40;
+    }
+
+    .dot {
+        @apply w-2 h-2 rounded-full mr-2;
+    }
+}
+
 .btn-fullscreen {
     @apply absolute bottom-4 right-4 z-20 p-2 rounded-lg text-white transition-all;
     @apply bg-white/20 hover:bg-white/40 backdrop-blur-sm;
     @apply opacity-0 group-hover:opacity-100 focus:opacity-100;
-
     i {
         @apply text-2xl;
     }
 }
 
-// Sidebar Data
+/* Sidebar (일반 모드) */
 .data-sidebar {
-    width: 400px;
+    width: 500px;
     margin-left: 20px;
-    color: black;
-    padding: 20px;
+    @apply flex flex-col h-[660px];
+}
 
-    .data-row {
-        @apply mb-2;
+.chart-controls {
+    @apply flex gap-2 mb-4;
+}
+
+.metric-checkbox {
+    @apply flex items-center px-3 py-1.5 rounded-full border text-sm font-medium cursor-pointer transition-all;
+    @apply bg-white border-gray-200 text-gray-500;
+
+    &:hover {
+        @apply bg-gray-50;
     }
-
-    .label {
-        @apply mr-2 font-medium;
+    &.is-active {
+        @apply border-transparent text-gray-800 shadow-sm;
+        background-color: #f3f4f6;
     }
+    .dot {
+        @apply w-2.5 h-2.5 rounded-full mr-2;
+    }
+}
 
-    .value {
-        @apply font-bold;
+.chart-wrapper {
+    @apply flex-1 bg-gray-50 rounded-lg border border-gray-200 p-2 relative;
+    min-height: 200px;
+}
+
+.current-values {
+    @apply mt-4 grid grid-cols-3 gap-2;
+    .mini-stat {
+        @apply bg-gray-100 rounded p-2 text-center text-sm font-mono text-gray-700;
+        .lbl {
+            @apply text-gray-400 font-bold mr-1;
+        }
     }
 }
 </style>
