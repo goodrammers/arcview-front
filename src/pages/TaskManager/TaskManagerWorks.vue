@@ -65,13 +65,11 @@
                         </td>
                         <td class="px-6 py-4">
                             <div class="space-y-1">
-                                <div
-                                    v-for="camera in boothItem.cameras"
-                                    :key="camera.id"
-                                    class="text-xs text-gray-500"
-                                >
-                                    {{ camera.name }}
-                                </div>
+                                <template v-for="welder in boothItem.welders">
+                                    <div class="text-xs text-gray-500">
+                                        {{ welder.cameras.map((value) => value.name).join(',') }}
+                                    </div>
+                                </template>
                             </div>
                         </td>
                         <td class="px-6 py-4">
@@ -106,7 +104,7 @@
                 </tbody>
             </table>
         </div>
-        <VDialog width="400" height="500" v-model="dlg">
+        <VDialog width="400" height="420" v-model="dlg">
             <EditBooth
                 @close="() => (dlg = false)"
                 :boothId="selectedBoothId"

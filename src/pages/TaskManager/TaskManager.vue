@@ -41,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import TaskManagerWorks from '@/pages/TaskManager/TaskManagerWorks.vue'
 import TaskManagerWelder from '@/pages/TaskManager/TaskManagerWelder.vue'
 import { useTaskItems } from '@/pages/TaskManager/TaskItems.ts'
@@ -56,8 +56,13 @@ function selectTab(index: number) {
 async function fetchItems() {
     await Promise.all([fetchBooths(), fetchWelders()])
 }
-
-fetchItems()
+watch(
+    selectedTab,
+    () => {
+        fetchItems()
+    },
+    { immediate: true }
+)
 </script>
 
 <style scoped lang="scss"></style>

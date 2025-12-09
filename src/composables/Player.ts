@@ -1,12 +1,13 @@
-import { computed, ref } from 'vue'
+import { computed, type Ref, ref } from 'vue'
 
-export function usePlayer() {
+export function usePlayer(serverAddress: Ref<string>) {
     const camId = ref('')
     const url = computed(() =>
-        camId.value
-            ? `http://192.168.0.64:1985/rtc/v1/whep/?app=live&stream=cam-${camId.value}`
+        camId.value && serverAddress.value !== ''
+            ? `http://${serverAddress.value}:1985/rtc/v1/whep/?app=live&stream=cam-${camId.value}`
             : ''
     )
+
     const isPlaying = ref(false)
     // @ts-ignore
     let player = null

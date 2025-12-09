@@ -1,18 +1,4 @@
-import axios from 'axios'
-
-const api = axios.create({
-    baseURL: '/api',
-})
-
-export interface RealtimeBooth {
-    id: number
-    welder_id: number
-    welder_name: string
-    booth_id: number
-    booth_name: string
-    start_time: number
-    end_time: number
-}
+import { axiosGet } from '@/api/Axios.ts'
 
 export interface RealTimeBoothItem {
     id: number
@@ -20,7 +6,10 @@ export interface RealTimeBoothItem {
     cameras: { id: number; name: string; welder_id: number }[]
 }
 
-export async function getRealtimeBooth(): Promise<RealTimeBoothItem[]> {
-    const res = await api.get<RealTimeBoothItem[]>('/realtime-booth')
-    return res.data
+export async function getRealtimeBooth() {
+    return axiosGet<RealTimeBoothItem[]>('/api/realtime-booth')
+}
+
+export async function getServerAddress() {
+    return axiosGet<{ ip: string }>('/api/server-address')
 }
