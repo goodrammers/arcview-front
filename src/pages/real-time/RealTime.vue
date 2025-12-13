@@ -52,6 +52,10 @@
                                 <span class="value">{{ voltageVal }} V</span>
                             </div>
                             <div class="overlay-row">
+                                <span class="label">Resistance:</span>
+                                <span class="value">{{ resistance }} mΩ</span>
+                            </div>
+                            <div class="overlay-row">
                                 <span class="label">Speed:</span>
                                 <span class="value">{{ speedVal }} m/min</span>
                             </div>
@@ -128,6 +132,10 @@
                             {{ voltageVal }}
                         </div>
                         <div class="mini-stat">
+                            <span class="lbl">Ω:</span>
+                            {{ resistance }}
+                        </div>
+                        <div class="mini-stat">
                             <span class="lbl">S:</span>
                             {{ speedVal }}
                         </div>
@@ -155,12 +163,21 @@ interface RealtimeWelder {
     voltage: number
     wire_feeding_speed: number
 }
+interface RealtimeWelderWithR extends RealtimeWelder {
+    resistance: number
+}
 
 // Chart Options (Y축 고정)
 const metricOptions = [
     { key: 'current', label: '전류 (A)', color: 'rgb(255, 99, 132)', min: 0, max: 500 },
     { key: 'voltage', label: '전압 (V)', color: 'rgb(53, 162, 235)', min: 0, max: 60 },
-    // [수정] 속도 최대값 조정 (1/10 스케일링 제거 반영)
+    {
+        key: 'resistance',
+        label: '저항 (mΩ)',
+        color: 'rgb(165,46,204)',
+        min: 0,
+        max: 1000,
+    },
     {
         key: 'wire_feeding_speed',
         label: '속도 (m/min)',
@@ -181,7 +198,7 @@ const isFullScreen = ref(false)
 const booths = ref<RealTimeBoothItem[]>([])
 const selectedBooth = ref('')
 const selectedCamera = ref<{ id: number; name: string; welder_id: number } | undefined>(undefined)
-const realtimeData = ref<RealtimeWelder[]>([])
+const realtimeData = ref<RealtimeWelderWithR[]>([])
 const MAX_DATA_LENGTH = 20
 const serverAddress = ref('')
 const selectedMetrics = ref<string[]>(['current', 'voltage'])
@@ -204,23 +221,26 @@ const voltageVal = computed(
 const speedVal = computed(
     () => realtimeData.value[realtimeData.value.length - 1]?.wire_feeding_speed?.toFixed(1) ?? '-'
 )
+const resistance = computed(
+    () => realtimeData.value[realtimeData.value.length - 1]?.resistance?.toFixed(1) ?? '-'
+)
 
 const { changeCam, setVideoEl } = usePlayer(serverAddress)
 
 // WebSocket
 const ws = new WebSocket(`${window.location.origin.replace('http', 'ws')}/realtime`)
 ws.onmessage = function (event) {
-    const rawData = JSON.parse(event.data) as RealtimeWelder
-
-    const data = {
-        ...rawData,
-        current: rawData.current / 10,
-        voltage: rawData.voltage / 10,
-    }
+    const data = JSON.parse(event.data) as RealtimeWelder
 
     if (selectedCamera.value) {
         if (selectedCamera.value.welder_id === data.welder_id) {
-            realtimeData.value.push(data)
+            let resistance = 0
+            if (data.current > 0) {
+                resistance = (data.voltage / data.current) * 1000
+                resistance = resistance > 1000 ? 1000 : resistance
+            }
+
+            realtimeData.value.push({ ...data, resistance })
             if (realtimeData.value.length > MAX_DATA_LENGTH) {
                 realtimeData.value.shift()
             }
@@ -278,17 +298,23 @@ function initChart() {
 }
 
 function updateChart() {
-    if (!chartInstance.value) return
+    if (!chartInstance.value) {
+        return
+    }
 
     const datasets: any[] = []
     let leftAxisUsed = false
 
     metricOptions.forEach((opt) => {
-        if (!selectedMetrics.value.includes(opt.key)) return
+        if (!selectedMetrics.value.includes(opt.key)) {
+            return
+        }
 
         const dataPoints = realtimeData.value.map((d) => (d as any)[opt.key])
         const yAxisID = !leftAxisUsed ? 'y' : 'y1'
-        if (!leftAxisUsed) leftAxisUsed = true
+        if (!leftAxisUsed) {
+            leftAxisUsed = true
+        }
 
         datasets.push({
             label: opt.label,
@@ -333,11 +359,13 @@ function updateChart() {
 }
 
 function onMetricChange(key: string) {
-    const idx = selectedMetrics.value.indexOf(key)
-    if (idx > -1) {
-        selectedMetrics.value.splice(idx, 1)
+    const index = selectedMetrics.value.indexOf(key)
+    if (index >= 0) {
+        selectedMetrics.value.splice(index, 1)
     } else {
-        if (selectedMetrics.value.length >= 2) selectedMetrics.value.shift()
+        if (selectedMetrics.value.length >= 2) {
+            selectedMetrics.value.shift()
+        }
         selectedMetrics.value.push(key)
     }
     updateChart()
@@ -605,7 +633,7 @@ watch(selectedCamera, () => {
 }
 
 .current-values {
-    @apply mt-4 grid grid-cols-3 gap-2;
+    @apply mt-4 grid grid-cols-4 gap-2;
     .mini-stat {
         @apply bg-gray-100 rounded p-2 text-center text-sm font-mono text-gray-700;
         .lbl {

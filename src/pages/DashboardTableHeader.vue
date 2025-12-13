@@ -19,6 +19,16 @@
             <th
                 class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
+                카메라1
+            </th>
+            <th
+                class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+                카메라2
+            </th>
+            <th
+                class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
                 시작 시간
             </th>
             <th

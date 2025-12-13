@@ -24,6 +24,24 @@
                             {{ item.welder_name }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{
+                                item.videos.length > 0
+                                    ? item.videos[0].file_path
+                                        ? item.videos[0].file_path
+                                        : '-'
+                                    : ''
+                            }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{
+                                item.videos.length > 1
+                                    ? item.videos[1].file_path
+                                        ? item.videos[1].file_path
+                                        : '-'
+                                    : ''
+                            }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ formatStamp(item.start_time) }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -73,7 +91,8 @@ function formatStamp(stamp: number) {
     return `${YYYY}-${MM}-${DD} ${hh}:${mm}:${ss}`
 }
 async function onClicked(id: number) {
-    router.push({ path: '/welding-view', query: { id } })
+    // router.push({ path: '/welding-view', query: { id } })
+    router.push({ path: '/job-detail', query: { id } })
 }
 </script>
 
