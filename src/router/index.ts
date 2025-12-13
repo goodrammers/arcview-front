@@ -1,10 +1,10 @@
 import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
-import WeldingView from '@/pages/WeldingView.vue'
 import Dashboard from '@/pages/Dashboard.vue'
 import MainLayout from '@/layout/MainLayout.vue'
 import RealTime from '@/pages/real-time/RealTime.vue'
 import Admin from '@/pages/Admin.vue'
 import TaskManager from '@/pages/TaskManager/TaskManager.vue'
+import JobDetail from '@/pages/JobDetail/JobDetail.vue'
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -13,7 +13,7 @@ const routes: Array<RouteRecordRaw> = [
         redirect: '/dashboard',
         children: [
             { path: '/dashboard', component: Dashboard },
-            { path: '/welding-view', component: WeldingView },
+            { path: '/job-detail', component: JobDetail },
             { path: '/real-time', component: RealTime },
             { path: '/task', component: TaskManager },
             { path: '/admin', component: Admin },

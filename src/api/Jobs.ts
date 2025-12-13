@@ -8,10 +8,12 @@ export interface Job {
     booth_name: string
     start_time: number
     end_time: number
+    videos: JobVideo[]
 }
 
 interface JobVideo {
     camera_id: number
+    camera_name: string
     file_path: string
 }
 
@@ -26,6 +28,12 @@ export interface JobResponse {
     id: number
     videos: JobVideo[]
     measurements: JobMeasurement[]
+    booth_id: number
+    booth_name: string
+    welder_id: number
+    welder_name: string
+    start: number
+    end: number
 }
 
 export async function getJobs(query: QueryParams = {}) {
