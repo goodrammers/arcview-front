@@ -1,54 +1,38 @@
-import axios from 'axios'
-import { axiosGet, type QueryParams } from '@/api/Axios.ts'
-//
-// const api = axios.create({
-//     baseURL: '/api',
-// })
+import { axiosDelete, axiosGet, axiosPatch, axiosPost, type QueryParams } from '@/api/Axios.ts'
 
 export interface Camera {
     id: number
-    welder_id: number
+    welder_id?: number
+    welder_name?: string
     name: string
     description?: string
     video_port: number
     created_at?: string
     updated_at?: string
 }
+export interface CreateCameraParams {
+    name: string
+    video_port?: number
+    description?: string
+    welder_id?: number
+}
 
-// // 전체 목록 조회 (GET /api/cameras)
-// export async function fetchCameras(): Promise<Camera[]> {
-//     const res = await api.get<Camera[]>('/cameras')
-//     return res.data
-// }
-//
-// // 단일 조회 (GET /api/cameras/:id)
-// export async function fetchCameraById(id: number): Promise<Camera> {
-//     const res = await api.get<Camera>(`/cameras/${id}`)
-//     return res.data
-// }
-//
-// // 생성 (POST /api/cameras)
-// export async function createCamera(data: Camera): Promise<Camera> {
-//     const res = await api.post<Camera>('/cameras', data)
-//     return res.data
-// }
-//
-// // 수정 (PUT /api/cameras)
-// export async function updateCamera(data: Camera): Promise<void> {
-//     await api.put('/cameras', data)
-// }
-//
-// // 삭제 (DELETE /api/cameras/:id)
-// export async function deleteCamera(id: number): Promise<void> {
-//     await api.delete(`/cameras/${id}`)
-// }
-//
-// //  특정 용접사(welder_id) 기준으로 카메라 조회
-// export async function fetchCamerasByWelder(welderId: number): Promise<Camera[]> {
-//     const res = await api.get<Camera[]>(`/cameras/welder/${welderId}`)
-//     return res.data
-// }
+export interface UpdateCameraParams {
+    name?: string
+    video_port?: number
+    description?: string
+    welder_id?: number
+}
 
-export async function getCameras(queryParam: QueryParams) {
+export async function getCameras(queryParam: QueryParams = {}) {
     return axiosGet<Camera[]>('/api/cameras', queryParam)
+}
+export async function postCamera(param: CreateCameraParams) {
+    return await axiosPost<undefined>('/api/camera', param)
+}
+export async function patchCamera(id: number, param: UpdateCameraParams) {
+    return await axiosPatch<undefined>(`/api/cameras/${id}`, param)
+}
+export async function deleteCamera(id: number) {
+    await axiosDelete<undefined>(`/api/cameras/${id}`)
 }

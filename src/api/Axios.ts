@@ -63,6 +63,18 @@ export async function axiosPut<T>(
 
     return response.data as ApiBaseResponse<T>
 }
+
+export async function axiosPatch<T>(
+    endpoint: string,
+    body?: Record<string, any>,
+    headers?: AxiosRequestHeaders
+) {
+    const response = await axios.patch(endpoint, body, {
+        headers,
+    })
+
+    return response.data as ApiBaseResponse<T>
+}
 export async function axiosDelete<T>(
     endpoint: string,
     body?: Record<string, any>,
