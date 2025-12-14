@@ -27,13 +27,29 @@
                 >
                     용접기
                 </button>
+                <button
+                    class="px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap cursor-pointer"
+                    :class="[
+                        selectedTab === 2
+                            ? 'bg-white text-blue-600 shadow-sm'
+                            : 'text-gray-600 hover:text-gray-900',
+                    ]"
+                    @click="() => selectTab(2)"
+                >
+                    카메라
+                </button>
             </div>
             <VWindow v-model="selectedTab">
                 <VWindowItem>
                     <TaskManagerWorks></TaskManagerWorks>
                 </VWindowItem>
+
                 <VWindowItem>
                     <TaskManagerWelder></TaskManagerWelder>
+                </VWindowItem>
+
+                <VWindowItem>
+                    <CameraManager></CameraManager>
                 </VWindowItem>
             </VWindow>
         </div>
@@ -45,16 +61,17 @@ import { ref, watch } from 'vue'
 import TaskManagerWorks from '@/pages/TaskManager/TaskManagerWorks.vue'
 import TaskManagerWelder from '@/pages/TaskManager/TaskManagerWelder.vue'
 import { useTaskItems } from '@/pages/TaskManager/TaskItems.ts'
+import CameraManager from '@/pages/TaskManager/CameraManager.vue'
 
 const selectedTab = ref(0)
 
-const { fetchBooths, fetchWelders } = useTaskItems()
+const { fetchBooths, fetchWelders, fetchCameras } = useTaskItems()
 function selectTab(index: number) {
     selectedTab.value = index
 }
 
 async function fetchItems() {
-    await Promise.all([fetchBooths(), fetchWelders()])
+    await Promise.all([fetchBooths(), fetchWelders(), fetchCameras()])
 }
 watch(
     selectedTab,
