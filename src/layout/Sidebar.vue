@@ -1,69 +1,48 @@
 <template>
-    <div class="w-64 bg-white border-r border-gray-200 h-screen flex flex-col">
-        <div class="p-6 border-b border-gray-200">
+    <div
+        class="bg-white border-r border-gray-200 h-screen flex flex-col transition-all duration-300 ease-in-out"
+        :class="[isCollapsed ? 'w-20' : 'w-64']"
+    >
+        <div class="p-6 border-b border-gray-200 flex items-center justify-between h-[88px]">
             <h1
-                class="text-2xl font-bold text-gray-900 cursor-pointer"
+                v-show="!isCollapsed"
+                class="text-2xl font-bold text-gray-900 cursor-pointer whitespace-nowrap overflow-hidden transition-opacity duration-200"
                 style="font-family: Pacifico, serif"
             >
                 ArcVue
             </h1>
+
+            <button
+                @click="toggleSidebar"
+                class="text-gray-500 hover:text-gray-900 focus:outline-none transition-colors"
+                :class="{ 'mx-auto': isCollapsed }"
+            >
+                <i
+                    class="text-xl"
+                    :class="isCollapsed ? 'ri-menu-unfold-line' : 'ri-menu-fold-line'"
+                ></i>
+            </button>
         </div>
-        <nav class="flex-1 p-4">
+
+        <nav class="flex-1 p-4 overflow-hidden">
             <ul class="space-y-2">
-                <li>
+                <li v-for="(item, index) in menuItems" :key="index">
                     <button
-                        class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                        class="w-full flex items-center p-3 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
                         :class="[
-                            selectedMenu === 0
+                            selectedMenu === index
                                 ? 'bg-blue-50 text-blue-700'
                                 : 'hover:bg-gray-50 text-gray-700',
+                            isCollapsed ? 'justify-center' : 'text-left',
                         ]"
-                        @click="() => goTo(0)"
+                        @click="() => goTo(index)"
+                        :title="isCollapsed ? item.label : ''"
                     >
-                        <i class="ri-home-line text-lg mr-3"></i>
-                        홈
-                    </button>
-                </li>
-                <li>
-                    <button
-                        @click="() => goTo(1)"
-                        class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors cursor-pointer whitespace-nowrap"
-                        :class="[
-                            selectedMenu === 1
-                                ? 'bg-blue-50 text-blue-700'
-                                : 'hover:bg-gray-50 text-gray-700',
-                        ]"
-                    >
-                        <i class="ri-live-line text-lg mr-3"></i>
-                        실시간 보기
-                    </button>
-                </li>
-                <li>
-                    <button
-                        class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors cursor-pointer whitespace-nowrap"
-                        :class="[
-                            selectedMenu === 2
-                                ? 'bg-blue-50 text-blue-700'
-                                : 'hover:bg-gray-50 text-gray-700',
-                        ]"
-                        @click="() => goTo(2)"
-                    >
-                        <i class="ri-tools-line text-lg mr-3"></i>
-                        작업 관리
-                    </button>
-                </li>
-                <li>
-                    <button
-                        class="w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors cursor-pointer whitespace-nowrap"
-                        :class="[
-                            selectedMenu === 3
-                                ? 'bg-blue-50 text-blue-700'
-                                : 'hover:bg-gray-50 text-gray-700',
-                        ]"
-                        @click="() => goTo(3)"
-                    >
-                        <i class="ri-admin-line text-lg mr-3"></i>
-                        관리자 메뉴
+                        <i :class="[item.icon, 'text-xl', isCollapsed ? '' : 'mr-3']"></i>
+
+                        <span v-show="!isCollapsed" class="transition-opacity duration-200">
+                            {{ item.label }}
+                        </span>
                     </button>
                 </li>
             </ul>
@@ -77,11 +56,23 @@ import { ref } from 'vue'
 
 const router = useRouter()
 const selectedMenu = ref(0)
+const isCollapsed = ref(false) // 사이드바 토글 상태
+
+// 메뉴 아이템 데이터를 배열로 관리 (가독성 및 유지보수 향상)
+const menuItems = [
+    { label: '홈', icon: 'ri-home-line', path: '/dashboard' },
+    { label: '실시간 보기', icon: 'ri-live-line', path: '/real-time' },
+    { label: '작업 관리', icon: 'ri-tools-line', path: '/task' },
+    { label: '관리자 메뉴', icon: 'ri-admin-line', path: '/admin' },
+]
+
+function toggleSidebar() {
+    isCollapsed.value = !isCollapsed.value
+}
 
 function goTo(index: number) {
     selectedMenu.value = index
-    const routePath = ['/dashboard', '/real-time', '/task', '/admin']
-    router.push(routePath[index])
+    router.push(menuItems[index].path)
 }
 </script>
 
