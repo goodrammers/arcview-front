@@ -5,7 +5,7 @@
                 class="text-2xl font-bold text-gray-900 cursor-pointer"
                 style="font-family: Pacifico, serif"
             >
-                Welding
+                ArcVue
             </h1>
         </div>
         <nav class="flex-1 p-4">
