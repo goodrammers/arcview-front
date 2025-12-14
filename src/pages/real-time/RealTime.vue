@@ -225,15 +225,16 @@ const resistance = computed(
     () => realtimeData.value[realtimeData.value.length - 1]?.resistance?.toFixed(1) ?? '-'
 )
 
-const { changeCam, setVideoEl } = usePlayer(serverAddress)
+const { changeCam, stop, setVideoEl } = usePlayer(serverAddress)
 
 // WebSocket
 const ws = new WebSocket(`${window.location.origin.replace('http', 'ws')}/realtime`)
 ws.onmessage = function (event) {
     const data = JSON.parse(event.data) as RealtimeWelder
 
-    if (selectedCamera.value) {
-        if (selectedCamera.value.welder_id === data.welder_id) {
+    if (selectedBooth.value) {
+        const booth = booths.value.find((value) => value.id === +selectedBooth.value)
+        if (booth && booth.cameras.some((value) => value.welder_id === data.welder_id)) {
             let resistance = 0
             if (data.current > 0) {
                 resistance = (data.voltage / data.current) * 1000
@@ -397,15 +398,24 @@ function onFullscreenChange() {
 }
 
 function connect() {
-    if (!selectedCamera.value) return
+    if (!selectedCamera.value) {
+        videoConnected.value = false
+        stop()
+        return
+    }
     videoConnected.value = true
     const video = videoEl.value
     changeCam(selectedCamera.value.id)
-    if (video) setVideoEl(video)
+    if (video) {
+        setVideoEl(video)
+    }
 }
 
 function onBoothSelected(e: Event) {
     selectedBooth.value = (e.target as HTMLSelectElement).value
+    realtimeData.value = []
+    videoConnected.value = false
+    updateChart()
 }
 
 function onCameraSelected(e: Event) {
@@ -451,8 +461,9 @@ onUnmounted(() => {
 watch(selectedCamera, () => {
     if (selectedCamera.value) {
         connect()
-        realtimeData.value = []
-        updateChart()
+    } else {
+        stop()
+        videoConnected.value = false
     }
 })
 </script>
