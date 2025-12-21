@@ -1,20 +1,15 @@
 <template>
-    <div class="bg-white shadow-sm border-b flex-shrink-0">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center space-x-4">
-                    <button
-                        class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 cursor-pointer"
-                        @click="onClickBack"
-                    >
-                        <i class="ri-arrow-left-line text-xl"></i>
+    <div class="header-container">
+        <div class="header-content">
+            <div class="header-row">
+                <div class="left-section">
+                    <button class="back-btn" @click="onClickBack">
+                        <i class="ri-arrow-left-line"></i>
                     </button>
 
-                    <div>
-                        <h1 class="text-xl font-semibold text-gray-900">
-                            작업 ID - {{ currentJobId }}
-                        </h1>
-                        <div class="flex items-center space-x-6 text-sm text-gray-600 mt-1">
+                    <div class="title-group">
+                        <h1 class="page-title">작업 ID - {{ currentJobId }}</h1>
+                        <div class="meta-info">
                             <span>작업실: {{ boothName }}</span>
                             <span>용접기: {{ welderName }}</span>
 
@@ -44,4 +39,61 @@ function onClickBack() {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.header-container {
+    background-color: #3a3b5b;
+    flex-shrink: 0;
+    color: white;
+}
+
+.header-content {
+    max-width: 1280px; /* max-w-7xl */
+    margin: 0 auto;
+    padding: 0 24px; /* px-6 정도 */
+}
+
+.header-row {
+    height: 64px; /* h-16 */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.left-section {
+    display: flex;
+    align-items: center;
+    gap: 16px; /* space-x-4 */
+}
+
+.back-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 20px; /* icon size */
+    transition: color 0.2s;
+}
+
+.title-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.page-title {
+    font-size: 20px; /* text-xl */
+    font-weight: 600; /* font-semibold */
+    margin: 0;
+}
+
+.meta-info {
+    display: flex;
+    align-items: center;
+    gap: 24px; /* space-x-6 */
+    font-size: 14px; /* text-sm */
+    margin-top: 4px; /* mt-1 */
+}
+</style>

@@ -471,6 +471,7 @@ watch(selectedCamera, () => {
 <style scoped lang="scss">
 .page-container {
     @apply flex-1 overflow-auto;
+    background-color: #27283d;
 }
 
 .content-wrapper {
@@ -478,11 +479,13 @@ watch(selectedCamera, () => {
 }
 
 .control-card {
-    @apply bg-white rounded-lg px-6 py-2 mb-6;
-    border: 1px solid #e5e7eb;
+    @apply rounded-lg px-6 py-2 mb-6;
+
+    background-color: #3a3b5b;
 
     .card-title {
-        @apply text-lg font-semibold text-gray-900 mb-4;
+        @apply text-lg font-semibold  mb-4;
+        color: white;
     }
 
     .selector-grid {
@@ -491,8 +494,8 @@ watch(selectedCamera, () => {
 }
 
 .monitor-card {
-    @apply bg-white rounded-lg py-6 px-10;
-    border: 1px solid #e5e7eb;
+    @apply rounded-lg py-6 px-10;
+    background-color: #3a3b5b;
     display: flex;
 }
 

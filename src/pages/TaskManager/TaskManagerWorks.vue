@@ -1,99 +1,66 @@
 <template>
-    <div class="space-y-6">
-        <div class="flex justify-between items-center">
-            <h2 class="text-lg font-semibold text-gray-900">작업실 목록</h2>
-            <button
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 whitespace-nowrap cursor-pointer"
-                @click="createBooth"
-            >
-                작업실 추가
-            </button>
+    <div class="container">
+        <div class="header-bar">
+            <h2 class="page-title">작업실 목록</h2>
+            <button class="create-btn" @click="createBooth">작업실 추가</button>
         </div>
-        <div
-            v-if="booths.length === 0"
-            class="bg-white border border-gray-200 rounded-lg p-12 text-center"
-        >
-            <div
-                class="w-16 h-16 flex items-center justify-center bg-gray-100 rounded-full mb-4 mx-auto"
-            >
-                <i class="ri-building-line text-2xl text-gray-400"></i>
+
+        <div v-if="booths.length === 0" class="empty-state">
+            <div class="icon-circle">
+                <i class="ri-building-line"></i>
             </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">등록된 작업실이 없습니다</h3>
+            <h3 class="empty-text">등록된 작업실이 없습니다</h3>
         </div>
-        <div v-else class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-            <table class="w-full">
-                <thead class="bg-slate-50 border-b border-gray-200">
-                    <tr>
-                        <th
-                            class="px-6 py-4 text-left text-sm font-semibold text-slate-700 tracking-wide"
-                        >
-                            작업실 정보
-                        </th>
-                        <th
-                            class="px-6 py-4 text-left text-sm font-semibold text-slate-700 tracking-wide"
-                        >
-                            카메라
-                        </th>
-                        <th
-                            class="px-6 py-4 text-left text-sm font-semibold text-slate-700 tracking-wide"
-                        >
-                            용접기
-                        </th>
-                        <th
-                            class="px-6 py-4 text-left text-sm font-semibold text-slate-700 tracking-wide"
-                        >
-                            마지막 수정일
-                        </th>
-                        <th
-                            class="px-6 py-4 text-left text-sm font-semibold text-slate-700 tracking-wide"
-                        >
-                            작업
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-100">
-                    <tr v-for="boothItem in booths" class="hover:bg-gray-50/50">
-                        <td class="px-6 py-4">
-                            <div>
-                                <div class="text-sm font-medium text-gray-900">
+
+        <div v-else class="table-wrapper">
+            <table class="custom-table">
+                <DataTableHeader :headers="headers"></DataTableHeader>
+
+                <tbody>
+                    <tr class="data-row" v-for="boothItem in booths" :key="boothItem.id">
+                        <td class="cell info-cell">
+                            <div class="info-group">
+                                <div class="info-name">
                                     {{ boothItem.name }}
                                 </div>
-                                <div class="text-sm text-gray-500">
+                                <div class="info-desc">
                                     {{ boothItem.location || '' }}
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4">
-                            <div class="space-y-1">
-                                <template v-for="welder in boothItem.welders">
-                                    <div class="text-xs text-gray-500">
+                        <td class="cell">
+                            <div class="list-group">
+                                <template v-for="welder in boothItem.welders" :key="welder.id">
+                                    <div class="list-item text-gray">
                                         {{ welder.cameras.map((value) => value.name).join(',') }}
                                     </div>
                                 </template>
                             </div>
                         </td>
-                        <td class="px-6 py-4">
-                            <div
-                                v-for="welder in boothItem.welders"
-                                :key="welder.id"
-                                class="text-xs text-gray-500"
-                            >
-                                {{ welder.name }}
+                        <td class="cell">
+                            <div class="list-group">
+                                <div
+                                    v-for="welder in boothItem.welders"
+                                    :key="welder.id"
+                                    class="list-item text-gray"
+                                >
+                                    {{ welder.name }}
+                                </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td class="cell text-gray">
                             {{ boothItem.updated_at || '' }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex space-x-2">
+                        <td class="cell">
+                            <div class="action-group">
                                 <button
-                                    class="p-2 text-gray-400 hover:text-blue-600 transition-colors cursor-pointer"
+                                    class="action-btn edit"
                                     @click="() => onEditBooth(boothItem.id)"
                                 >
                                     <i class="ri-edit-line"></i>
                                 </button>
                                 <button
-                                    class="p-2 text-gray-400 hover:text-red-600 transition-colors cursor-pointer"
+                                    class="action-btn delete"
                                     @click="() => onDeleteBooth(boothItem.id)"
                                 >
                                     <i class="ri-delete-bin-line"></i>
@@ -104,6 +71,7 @@
                 </tbody>
             </table>
         </div>
+
         <VDialog width="400" height="420" v-model="dlg">
             <EditBooth
                 @close="() => (dlg = false)"
@@ -115,18 +83,29 @@
 </template>
 
 <script setup lang="ts">
-import { deleteBooth } from '@/api/Booth.ts'
 import { ref } from 'vue'
+import { deleteBooth } from '@/api/Booth.ts'
 import EditBooth from '@/pages/TaskManager/EditBooth.vue'
 import { storeToRefs } from 'pinia'
 import { useTaskItems } from '@/pages/TaskManager/TaskItems.ts'
 import { ResultCode } from '@/api/Types.ts'
+import { DataTableHeader } from '@/widgets/data-table'
+import type { DataTableHeaderItem } from '@/widgets/data-table/Types.ts'
 
 const { booths } = storeToRefs(useTaskItems())
 const { fetchBooths } = useTaskItems()
 const boothEditMode = ref<'create' | 'edit'>('create')
 const dlg = ref(false)
 const selectedBoothId = ref(-1)
+
+// 헤더 정의
+const headers = ref<DataTableHeaderItem[]>([
+    { label: '작업실 정보' },
+    { label: '카메라' },
+    { label: '용접기' },
+    { label: '마지막 수정일' },
+    { label: '작업' },
+])
 
 function createBooth() {
     dlg.value = true
@@ -154,4 +133,170 @@ function onEditBooth(id: number) {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* 상단 바 */
+.header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+}
+
+.create-btn {
+    padding: 8px 16px;
+    background-color: #3e4771;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+    transition: background-color 0.2s;
+}
+
+/* Empty State */
+.empty-state {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 48px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-circle {
+    width: 64px;
+    height: 64px;
+    background-color: #f3f4f6;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+
+    i {
+        font-size: 24px;
+        color: #9ca3af;
+    }
+}
+
+.empty-text {
+    font-size: 18px;
+    font-weight: 500;
+    color: #111827;
+    margin: 0;
+}
+
+/* Table Wrapper */
+.table-wrapper {
+    background-color: #ffffff;
+
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Data Rows */
+.data-row {
+    background-color: #ffffff;
+    transition: background-color 0.2s;
+
+    &:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    &:hover {
+        background-color: #f3f4f6;
+    }
+}
+
+.cell {
+    padding: 16px 24px;
+    font-size: 14px;
+    color: #111827;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+
+    &.text-gray {
+        color: #6b7280;
+    }
+}
+
+/* Info Group */
+.info-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-name {
+    font-weight: 500;
+    color: #111827;
+}
+
+.info-desc {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+/* List Items (Cameras, Welders) */
+.list-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.list-item {
+    font-size: 12px;
+    &.text-gray {
+        color: #6b7280;
+    }
+}
+
+/* Action Buttons */
+.action-group {
+    display: flex;
+    gap: 8px;
+}
+
+.action-btn {
+    padding: 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #9ca3af;
+    font-size: 18px;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.edit:hover {
+        color: #2563eb;
+    }
+
+    &.delete:hover {
+        color: #dc2626;
+    }
+}
+</style>
