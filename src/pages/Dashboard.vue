@@ -1,8 +1,8 @@
 <template>
-    <div class="flex-1 overflow-auto">
-        <div class="p-6 bg-white min-h-screen">
+    <div class="flex-1 overflow-auto dashboard-root">
+        <div class="p-6 min-h-screen">
             <div class="flex items-center justify-between mb-6">
-                <h1 class="text-2xl font-bold text-gray-900">작업 목록</h1>
+                <h1 class="text-2xl font-bold text-[#D9D9D9]">작업 목록</h1>
             </div>
             <DashboardTable :items="jobs"></DashboardTable>
         </div>
@@ -27,4 +27,8 @@ async function init() {
 init()
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.dashboard-root {
+    background-color: #27283d;
+}
+</style>

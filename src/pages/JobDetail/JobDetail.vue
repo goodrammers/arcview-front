@@ -33,7 +33,7 @@ useHiddenVideoManager()
     width: 100%;
     height: 100vh;
     min-width: 0;
-    background-color: #f5f7fa;
+    background-color: #27283d;
 }
 
 .header-fixed {
