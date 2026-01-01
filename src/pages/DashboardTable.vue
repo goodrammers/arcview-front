@@ -71,7 +71,7 @@ const tableHeaders = ref<DataTableHeaderItem[]>([
 function formatStamp(stamp: number) {
     const date = new Date(stamp / 1000)
     const YYYY = String(date.getFullYear())
-    const MM = String(date.getMonth()).padStart(2, '0')
+    const MM = String(date.getMonth() + 1).padStart(2, '0')
     const DD = String(date.getDate()).padStart(2, '0')
     const hh = String(date.getHours()).padStart(2, '0')
     const mm = String(date.getMinutes()).padStart(2, '0')
