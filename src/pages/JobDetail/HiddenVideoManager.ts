@@ -8,17 +8,20 @@ export function useHiddenVideoManager() {
     let createdElements: HTMLVideoElement[] = []
     let currentMasterVideo: HTMLVideoElement | null = null
 
-    function findLongestVideo(): HTMLVideoElement | null {
-        if (createdElements.length === 0) {
+    function findBestMasterVideo(): HTMLVideoElement | null {
+        if (createdElements.length === 0 || videoList.value.length === 0) {
             return null
         }
+        let minStartTime = videoList.value[0].start_time
+        let bestIdx = 0
 
-        // duration 이 유효한 것들 중 가장 긴 것 찾기
-        return createdElements.reduce((prev, current) => {
-            const prevDur = isNaN(prev.duration) ? 0 : prev.duration
-            const currDur = isNaN(current.duration) ? 0 : current.duration
-            return prevDur > currDur ? prev : current
-        }, createdElements[0])
+        videoList.value.forEach((v, idx) => {
+            if (v.start_time < minStartTime) {
+                minStartTime = v.start_time
+                bestIdx = idx
+            }
+        })
+        return createdElements[bestIdx] || null
     }
 
     function createVideoElement(src: string): HTMLVideoElement {
@@ -74,16 +77,20 @@ export function useHiddenVideoManager() {
         createdElements = []
         currentMasterVideo = null
     }
+
     function onFrame(now: number, metadata: VideoFrameCallbackMetadata) {
         if (!currentMasterVideo || currentMasterVideo.paused) {
             return
         }
-
-        // Store 시간 업데이트
         weldingStore.syncTime(currentMasterVideo.currentTime)
-
-        // 재귀 호출
         currentMasterVideo.requestVideoFrameCallback(onFrame)
+    }
+
+    function getOffsetSeconds(index: number): number {
+        if (videoList.value.length === 0) return 0
+        const minStartTime = Math.min(...videoList.value.map((v) => v.start_time))
+        const myStart = videoList.value[index].start_time
+        return (myStart - minStartTime) / 1000000
     }
 
     watch(
@@ -93,8 +100,6 @@ export function useHiddenVideoManager() {
             if (!newList || newList.length === 0) {
                 return
             }
-
-            // 리스트가 바뀌면 Duration 초기화
             weldingStore.duration = 0
 
             const newElements: HTMLVideoElement[] = []
@@ -110,19 +115,31 @@ export function useHiddenVideoManager() {
 
     watch(isPlaying, (playing) => {
         if (playing) {
-            // 재생 시작 시점에 가장 긴 비디오를 Master로 선정
-            const master = findLongestVideo()
+            const master = findBestMasterVideo()
             if (master) {
                 currentMasterVideo = master
                 master.requestVideoFrameCallback(onFrame)
             }
 
-            // 모든 비디오 재생
-            createdElements.forEach((video) => {
-                video.play().catch(() => {})
+            createdElements.forEach((video, index) => {
+                const offset = getOffsetSeconds(index)
+                if (offset <= 0) {
+                    video.play().catch(() => {})
+                } else {
+                    const globalTime = currentTime.value
+                    if (globalTime >= offset) {
+                        video.play().catch(() => {})
+                    } else {
+                        const delayMs = (offset - globalTime) * 1000
+                        setTimeout(() => {
+                            if (isPlaying.value) {
+                                video.play().catch(() => {})
+                            }
+                        }, delayMs)
+                    }
+                }
             })
         } else {
-            // 정지
             createdElements.forEach((video) => {
                 video.pause()
             })
@@ -131,9 +148,16 @@ export function useHiddenVideoManager() {
     })
 
     watch(currentTime, (time) => {
-        createdElements.forEach((video) => {
-            if (Math.abs(video.currentTime - time) > 0.3) {
-                video.currentTime = time
+        createdElements.forEach((video, index) => {
+            const offset = getOffsetSeconds(index)
+            const targetLocalTime = time - offset
+
+            if (targetLocalTime < 0) {
+                video.currentTime = 0
+            } else {
+                if (Math.abs(video.currentTime - targetLocalTime) > 0.3) {
+                    video.currentTime = targetLocalTime
+                }
             }
         })
     })

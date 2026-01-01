@@ -59,6 +59,7 @@ export const useWeldingStore = defineStore('welding', () => {
             fileName: v.file_path.replace('/videos/', ''),
             camera_name: v.camera_name,
             camera_id: v.camera_id,
+            start_time: v.start_time,
         }))
     })
 
