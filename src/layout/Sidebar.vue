@@ -2,7 +2,7 @@
     <div class="sidebar" :class="{ collapsed: isCollapsed }">
         <div class="sidebar-header">
             <div class="logo-area">
-                <h1 class="logo-text">ArcVue</h1>
+                <h1 class="logo-text">ArcSync</h1>
             </div>
 
             <button class="toggle-btn" @click="toggleSidebar">
