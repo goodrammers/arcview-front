@@ -198,6 +198,7 @@ const isFullScreen = ref(false)
 const booths = ref<RealTimeBoothItem[]>([])
 const selectedBooth = ref('')
 const selectedCamera = ref<{ id: number; name: string; welder_id: number } | undefined>(undefined)
+const selectedWelderId = ref<number | undefined>(undefined)
 const realtimeData = ref<RealtimeWelderWithR[]>([])
 const MAX_DATA_LENGTH = 20
 const serverAddress = ref('')
@@ -232,9 +233,8 @@ const ws = new WebSocket(`${window.location.origin.replace('http', 'ws')}/realti
 ws.onmessage = function (event) {
     const data = JSON.parse(event.data) as RealtimeWelder
 
-    if (selectedBooth.value) {
-        const booth = booths.value.find((value) => value.id === +selectedBooth.value)
-        if (booth && booth.cameras.some((value) => value.welder_id === data.welder_id)) {
+    if (selectedWelderId.value !== undefined) {
+        if (data.welder_id === selectedWelderId.value) {
             let resistance = 0
             if (data.current > 0) {
                 resistance = (data.voltage / data.current) * 1000
@@ -415,6 +415,18 @@ function onBoothSelected(e: Event) {
     selectedBooth.value = (e.target as HTMLSelectElement).value
     realtimeData.value = []
     videoConnected.value = false
+    selectedWelderId.value = undefined
+
+    // 부스 선택 시 용접기 자동 선택
+    const booth = booths.value.find((value) => value.id === +selectedBooth.value)
+    if (booth) {
+        if (booth.welder_id) {
+            selectedWelderId.value = booth.welder_id
+        } else if (booth.cameras.length > 0) {
+            selectedWelderId.value = booth.cameras[0].welder_id
+        }
+    }
+
     updateChart()
 }
 

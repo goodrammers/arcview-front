@@ -3,6 +3,7 @@ import { axiosGet } from '@/api/Axios.ts'
 export interface RealTimeBoothItem {
     id: number
     name: string
+    welder_id?: number
     cameras: { id: number; name: string; welder_id: number }[]
 }
 
