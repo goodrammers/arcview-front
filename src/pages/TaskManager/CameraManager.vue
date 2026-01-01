@@ -34,7 +34,7 @@
                             {{ camera.welder_name || '' }}
                         </td>
                         <td class="cell text-gray">
-                            {{ camera.updated_at || '' }}
+                            {{ formatDate(camera.updated_at) }}
                         </td>
                         <td class="cell">
                             <div class="action-group">
@@ -75,6 +75,7 @@ import { deleteCamera } from '@/api/Camera.ts'
 import EditCamera from '@/pages/TaskManager/EditCamera.vue'
 import { DataTableHeader } from '@/widgets/data-table'
 import type { DataTableHeaderItem } from '@/widgets/data-table/Types.ts'
+import { formatDate } from '@/Utils/Formatter.ts'
 
 const { cameras } = storeToRefs(useTaskItems())
 const { fetchCameras } = useTaskItems()

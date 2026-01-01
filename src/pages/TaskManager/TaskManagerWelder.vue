@@ -34,7 +34,7 @@
                             {{ welder.ip_address }}
                         </td>
                         <td class="cell text-gray">
-                            {{ welder.updated_at || '' }}
+                            {{ formatDate(welder.updated_at) }}
                         </td>
                         <td class="cell">
                             <div class="action-group">
@@ -72,6 +72,7 @@ import { useTaskItems } from '@/pages/TaskManager/TaskItems.ts'
 import EditWelder from '@/pages/TaskManager/EditWelder.vue'
 import { ResultCode } from '@/api/Types.ts'
 import { DataTableHeader, type DataTableHeaderItem } from '@/widgets/data-table'
+import { formatDate } from '@/Utils/Formatter.ts'
 
 const { welders, booths } = storeToRefs(useTaskItems())
 const dlg = ref(false)

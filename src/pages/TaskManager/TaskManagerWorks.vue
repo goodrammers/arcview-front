@@ -49,7 +49,7 @@
                             </div>
                         </td>
                         <td class="cell text-gray">
-                            {{ boothItem.updated_at || '' }}
+                            {{ formatDate(boothItem.updated_at) }}
                         </td>
                         <td class="cell">
                             <div class="action-group">
@@ -84,6 +84,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { formatDate } from '@/Utils/Formatter.ts'
 import { deleteBooth } from '@/api/Booth.ts'
 import EditBooth from '@/pages/TaskManager/EditBooth.vue'
 import { storeToRefs } from 'pinia'
