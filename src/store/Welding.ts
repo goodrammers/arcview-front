@@ -4,17 +4,15 @@ import { getJobById, type JobResponse } from '@/api/Jobs.ts'
 import { ResultCode } from '@/api/Types.ts'
 
 export const useWeldingStore = defineStore('welding', () => {
-    // --- State ---
     const currentJob = ref<JobResponse | null>(null)
     const isPlaying = ref(false)
     const currentTime = ref(0)
     const duration = ref(0)
     const playbackRate = ref(1.0)
 
-    // [수정] 비디오 엘리먼트 저장소 (DOM 요소이므로 shallowRef)
+    // 비디오 엘리먼트 (DOM 요소이므로 shallowRef)
     const videoElements = shallowRef<(HTMLVideoElement | null)[]>([])
 
-    // --- Computed ---
     const voltages = computed(() => {
         if (!currentJob.value) return []
         const start = currentJob.value.start
@@ -67,7 +65,6 @@ export const useWeldingStore = defineStore('welding', () => {
     const welderName = computed(() => (currentJob.value ? currentJob.value.welder_name : '-'))
     const currentJobId = computed(() => (currentJob.value ? currentJob.value.id : '-'))
 
-    // --- Actions ---
     function getResistance(voltage: number, current: number) {
         if (current === 0) return 0
         const result = (voltage / current) * 1000
@@ -100,20 +97,22 @@ export const useWeldingStore = defineStore('welding', () => {
     }
 
     function seekTo(time: number) {
-        let t = Math.max(0, Math.min(time, duration.value))
-        currentTime.value = t
+        currentTime.value = Math.max(0, Math.min(time, duration.value))
     }
 
     function updateDuration(vidDuration: number) {
-        if (vidDuration > duration.value) duration.value = vidDuration
+        if (vidDuration > duration.value) {
+            duration.value = vidDuration
+        }
     }
 
     function syncTime(time: number) {
         currentTime.value = time
-        if (time >= duration.value) isPlaying.value = false
+        if (duration.value > 0 && time >= duration.value) {
+            isPlaying.value = false
+        }
     }
 
-    // [중요] 액션 정의
     function setVideoElement(index: number, el: HTMLVideoElement | null) {
         if (videoElements.value.length <= index) {
             for (let i = videoElements.value.length; i <= index; i++) {
@@ -126,15 +125,13 @@ export const useWeldingStore = defineStore('welding', () => {
     }
 
     return {
-        // State
         currentJob,
         isPlaying,
         currentTime,
         duration,
         playbackRate,
-        videoElements, // [필수] Export
+        videoElements,
 
-        // Computed
         voltages,
         currents,
         resistances,
@@ -144,13 +141,12 @@ export const useWeldingStore = defineStore('welding', () => {
         welderName,
         currentJobId,
 
-        // Actions
         fetchJob,
         togglePlay,
         stop,
         seekTo,
         updateDuration,
         syncTime,
-        setVideoElement, // [필수] Export (이게 없어서 에러난 것임)
+        setVideoElement,
     }
 })

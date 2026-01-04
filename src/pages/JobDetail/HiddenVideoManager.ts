@@ -12,20 +12,28 @@ export function useHiddenVideoManager() {
         if (createdElements.length === 0 || videoList.value.length === 0) {
             return null
         }
-        let minStartTime = videoList.value[0].start_time
-        let bestIdx = 0
+        let minStartTime = Infinity
+        let bestIdx = -1
 
-        videoList.value.forEach((v, idx) => {
+        videoList.value.forEach((v, index) => {
+            if (!v.src) {
+                return
+            }
             if (v.start_time < minStartTime) {
                 minStartTime = v.start_time
-                bestIdx = idx
+                bestIdx = index
             }
         })
+
+        if (bestIdx === -1) {
+            return null
+        }
         return createdElements[bestIdx] || null
     }
 
-    function createVideoElement(src: string): HTMLVideoElement {
+    function createVideoElement(src: string, id: string): HTMLVideoElement {
         const video = document.createElement('video')
+        video.id = id
         video.crossOrigin = 'anonymous'
         video.playsInline = true
         video.muted = true
@@ -36,7 +44,6 @@ export function useHiddenVideoManager() {
         video.style.left = '-9999px'
         video.style.width = '1px'
         video.style.height = '1px'
-        video.style.visibility = 'hidden'
 
         if (src) {
             video.src = src
@@ -79,7 +86,7 @@ export function useHiddenVideoManager() {
     }
 
     function onFrame(now: number, metadata: VideoFrameCallbackMetadata) {
-        if (!currentMasterVideo || currentMasterVideo.paused) {
+        if (!currentMasterVideo || !isPlaying.value) {
             return
         }
         weldingStore.syncTime(currentMasterVideo.currentTime)
@@ -87,8 +94,16 @@ export function useHiddenVideoManager() {
     }
 
     function getOffsetSeconds(index: number): number {
-        if (videoList.value.length === 0) return 0
-        const minStartTime = Math.min(...videoList.value.map((v) => v.start_time))
+        if (videoList.value.length === 0) {
+            return 0
+        }
+
+        const validVideos = videoList.value.filter((v) => v.src)
+        if (validVideos.length === 0) {
+            return 0
+        }
+
+        const minStartTime = Math.min(...validVideos.map((v) => v.start_time))
         const myStart = videoList.value[index].start_time
         return (myStart - minStartTime) / 1000000
     }
@@ -100,11 +115,10 @@ export function useHiddenVideoManager() {
             if (!newList || newList.length === 0) {
                 return
             }
-            weldingStore.duration = 0
 
             const newElements: HTMLVideoElement[] = []
             newList.forEach((item, index) => {
-                const el = createVideoElement(item.src)
+                const el = createVideoElement(item.src, `hidden-video-${index}`)
                 newElements.push(el)
                 weldingStore.setVideoElement(index, el)
             })
@@ -124,16 +138,28 @@ export function useHiddenVideoManager() {
             createdElements.forEach((video, index) => {
                 const offset = getOffsetSeconds(index)
                 if (offset <= 0) {
-                    video.play().catch(() => {})
+                    video.play().catch((e) => {
+                        if (e.name !== 'AbortError') {
+                            console.error(`[${video.id}] Play Failed`, e)
+                        }
+                    })
                 } else {
                     const globalTime = currentTime.value
                     if (globalTime >= offset) {
-                        video.play().catch(() => {})
+                        video.play().catch((e) => {
+                            if (e.name !== 'AbortError') {
+                                console.error(`[${video.id}] Play Failed`, e)
+                            }
+                        })
                     } else {
                         const delayMs = (offset - globalTime) * 1000
                         setTimeout(() => {
                             if (isPlaying.value) {
-                                video.play().catch(() => {})
+                                video.play().catch((e) => {
+                                    if (e.name !== 'AbortError') {
+                                        console.error(`[${video.id}] Play Failed`, e)
+                                    }
+                                })
                             }
                         }, delayMs)
                     }
