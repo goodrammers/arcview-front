@@ -99,29 +99,19 @@ const disabled = computed(() => {
 async function fetchWelders() {
     // @ts-ignore
     welders.value = [{ id: -1, name: 'Select a welder (Optional)' }]
-    if (mode.value === 'edit' && currentBooth.value && currentBooth.value.welders.length > 0) {
-        // Avoid adding if it's already in the fetched list, but distinct for now as 'current'
-        // The previous logic added current welder to the top.
-        // Let's just rely on getWelders and if current is there, it will be selected.
-        // However, if getWelders only returns unassigned ones, we might need to add the current one manually if it's not in the list.
-        // For simplicity, we keep the original logic pattern:
-        // @ts-ignore
-        // welders.value.push(currentBooth.value.welders[0]) // Potential duplicate if also returned by getWelders
-    }
-    const r = await getWelders({ booth_id: -1 }) // Assuming this fetches unassigned welders
-    if (r.code === ResultCode.SUCCESS && r.data) {
-        // Filter out duplicates if we added current welder manually (not done here to avoid complex logic, assuming server returns unassigned)
-        // If we are editing, we should verify if the currently assigned welder is valid to show.
-        // If we strictly follow the previous code, it just pushed them.
-        welders.value.push(...r.data)
 
-        // If editing, make sure the currently assigned welder is in the list
-        if (mode.value === 'edit' && currentBooth.value && currentBooth.value.welders.length > 0) {
-            const current = currentBooth.value.welders[0]
-            if (!welders.value.find((w) => w.id === current.id)) {
-                welders.value.splice(1, 0, current) // Insert after default option
+    if (mode.value === 'edit' && currentBooth.value && currentBooth.value.welders.length > 0) {
+        // @ts-ignore
+        welders.value.push(currentBooth.value.welders[0])
+    }
+
+    const r = await getWelders({ booth_id: -1 })
+    if (r.code === ResultCode.SUCCESS && r.data) {
+        r.data.forEach((welder) => {
+            if (!welders.value.find((w) => w.id === welder.id)) {
+                welders.value.push(welder)
             }
-        }
+        })
     }
 }
 
