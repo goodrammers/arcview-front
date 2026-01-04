@@ -1,8 +1,8 @@
 <template>
     <div class="container">
         <div class="header-bar">
-            <h2 class="page-title">작업실 목록</h2>
-            <button class="create-btn" @click="createBooth">작업실 추가</button>
+            <h2 class="page-title">Booth List</h2>
+            <button class="create-btn" @click="createBooth">Add Booth</button>
         </div>
 
         <div v-if="booths.length === 0" class="empty-state">
@@ -101,11 +101,11 @@ const selectedBoothId = ref(-1)
 
 // 헤더 정의
 const headers = ref<DataTableHeaderItem[]>([
-    { label: '작업실 정보' },
-    { label: '카메라' },
-    { label: '용접기' },
-    { label: '마지막 수정일' },
-    { label: '작업' },
+    { label: 'Booth Overview' },
+    { label: 'Camera' },
+    { label: 'Welding Unit' },
+    { label: 'Last Modified' },
+    { label: 'Actions' },
 ])
 
 function createBooth() {

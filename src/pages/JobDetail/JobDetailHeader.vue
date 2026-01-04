@@ -8,10 +8,10 @@
                     </button>
 
                     <div class="title-group">
-                        <h1 class="page-title">작업 ID - {{ currentJobId }}</h1>
+                        <h1 class="page-title">Job ID - {{ currentJobId }}</h1>
                         <div class="meta-info">
-                            <span>작업실: {{ boothName }}</span>
-                            <span>용접기: {{ welderName }}</span>
+                            <span>Booth: {{ boothName }}</span>
+                            <span>Welder: {{ welderName }}</span>
 
                             <span v-for="video in videoList" :key="video.index">
                                 {{ video.camera_name }}: {{ video.fileName ? video.fileName : '-' }}

@@ -1,15 +1,15 @@
 <template>
     <div class="container">
         <div class="header-bar">
-            <h2 class="page-title">용접기 목록</h2>
-            <button @click="onCreateWelder" class="create-btn">용접기 추가</button>
+            <h2 class="page-title">Welder List</h2>
+            <button @click="onCreateWelder" class="create-btn">Add Welder</button>
         </div>
 
         <div v-if="welders.length === 0" class="empty-state">
             <div class="icon-circle">
                 <i class="ri-tools-line"></i>
             </div>
-            <h3 class="empty-text">등록된 용접기가 없습니다</h3>
+            <h3 class="empty-text">No welders found</h3>
         </div>
 
         <div v-else class="table-wrapper">
@@ -81,12 +81,12 @@ const selectedWelder = ref(-1)
 
 // 헤더 정의
 const headers = ref<DataTableHeaderItem[]>([
-    { label: '용접기 정보' },
-    { label: '속한 작업실' },
-    { label: '카메라' },
+    { label: 'Welder Info' },
+    { label: 'Assigned Booth' },
+    { label: 'Camera' },
     { label: 'IP' },
-    { label: '마지막 수정일' },
-    { label: '작업' },
+    { label: 'Last Modified' },
+    { label: 'Actions' },
 ])
 
 function boothName(welderItem: Welder) {
@@ -110,11 +110,11 @@ function onEdit(id: number) {
 }
 
 async function onDelete(id: number) {
-    const ok = confirm('해당 항목을 삭제하시겠습니까?')
+    const ok = confirm('Are you sure you want to delete this welder?')
     if (ok) {
         const r = await deleteWelder({ id })
         if (r.code !== ResultCode.SUCCESS) {
-            alert('삭제에 실패하였습니다.')
+            alert('Failed to delete.')
         } else {
             await useTaskItems().fetchWelders()
         }

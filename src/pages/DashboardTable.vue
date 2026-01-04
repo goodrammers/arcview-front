@@ -57,15 +57,15 @@ const props = defineProps<{ items: Job[] }>()
 const { items } = toRefs(props)
 
 const tableHeaders = ref<DataTableHeaderItem[]>([
-    { label: '이름' },
-    { label: '작업실' },
-    { label: '용접기' },
-    { label: '카메라1' },
-    { label: '카메라2' },
-    { label: '시작 시간' },
-    { label: '종료 시간' },
-    { label: '길이' },
-    { label: '작업', align: 'right' },
+    { label: 'ID' },
+    { label: 'Booth' },
+    { label: 'Welding Unit' },
+    { label: 'Camera1' },
+    { label: 'Camera2' },
+    { label: 'Start Time' },
+    { label: 'End Time' },
+    { label: 'Duration' },
+    { label: 'Action', align: 'right' },
 ])
 
 function formatStamp(stamp: number) {

@@ -2,15 +2,15 @@
     <div class="page-container">
         <div class="content-wrapper">
             <div class="control-card">
-                <h2 class="card-title">실시간 보기</h2>
+                <h2 class="card-title">Monitoring Station</h2>
                 <div class="selector-grid">
                     <BaseSelect
-                        :first-item="{ value: '', label: '작업실 선택' }"
+                        :first-item="{ value: '', label: 'Select Booth' }"
                         :items="booths.map((value) => ({ value: value.id, label: value.name }))"
                         @change="onBoothSelected"
                     ></BaseSelect>
                     <BaseSelect
-                        :first-item="{ value: '', label: '카메라 선택' }"
+                        :first-item="{ value: '', label: 'Select Camera' }"
                         :items="cameraSelectors"
                         :disabled="cameraSelectors.length === 0"
                         @change="onCameraSelected"
@@ -37,7 +37,7 @@
                             <div class="icon-circle">
                                 <i class="ri-video-off-line text-2xl"></i>
                             </div>
-                            <p class="text-lg font-medium mb-2">영상 없음</p>
+                            <p class="text-lg font-medium mb-2">Video Not Available</p>
                         </div>
                     </div>
 
@@ -169,18 +169,18 @@ interface RealtimeWelderWithR extends RealtimeWelder {
 
 // Chart Options (Y축 고정)
 const metricOptions = [
-    { key: 'current', label: '전류 (A)', color: 'rgb(255, 99, 132)', min: 0, max: 500 },
-    { key: 'voltage', label: '전압 (V)', color: 'rgb(53, 162, 235)', min: 0, max: 60 },
+    { key: 'current', label: 'Current (A)', color: 'rgb(255, 99, 132)', min: 0, max: 500 },
+    { key: 'voltage', label: 'Voltage (V)', color: 'rgb(53, 162, 235)', min: 0, max: 60 },
     {
         key: 'resistance',
-        label: '저항 (mΩ)',
+        label: 'Resistance (mΩ)',
         color: 'rgb(165,46,204)',
         min: 0,
         max: 1000,
     },
     {
         key: 'wire_feeding_speed',
-        label: '속도 (m/min)',
+        label: 'Speed (m/min)',
         color: 'rgb(46, 204, 113)',
         min: 0,
         max: 250,
@@ -573,7 +573,7 @@ watch(selectedCamera, () => {
     @apply bg-black/10 backdrop-blur-md rounded-xl;
     /* [수정] 테두리 제거 */
 
-    width: 500px;
+    width: 550px;
     height: 280px;
     padding: 16px;
     @apply flex flex-col;
@@ -628,7 +628,7 @@ watch(selectedCamera, () => {
 
 /* Sidebar (일반 모드) */
 .data-sidebar {
-    width: 500px;
+    width: 550px;
     margin-left: 20px;
     @apply flex flex-col h-[660px];
 }

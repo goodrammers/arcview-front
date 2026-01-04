@@ -1,15 +1,15 @@
 <template>
     <div class="container">
         <div class="header-bar">
-            <h2 class="page-title">카메라 목록</h2>
-            <button class="create-btn" @click="createCamera">카메라 추가</button>
+            <h2 class="page-title">Camera List</h2>
+            <button class="create-btn" @click="createCamera">Add Camera</button>
         </div>
 
         <div v-if="cameras.length === 0" class="empty-state">
             <div class="icon-circle">
                 <i class="ri-building-line"></i>
             </div>
-            <h3 class="empty-text">등록된 카메라가 없습니다</h3>
+            <h3 class="empty-text">No cameras found</h3>
         </div>
 
         <div v-else class="table-wrapper">
@@ -86,12 +86,12 @@ const selectedCameraId = ref(-1)
 // 헤더 정의
 const headers = ref<DataTableHeaderItem[]>([
     { label: 'ID' },
-    { label: '이름' },
-    { label: '설명' },
-    { label: 'PORT' },
-    { label: '용접기' },
-    { label: '마지막 수정일' },
-    { label: '작업' },
+    { label: 'Name' },
+    { label: 'Description' },
+    { label: 'Port' },
+    { label: 'Welder' },
+    { label: 'Last Modified' },
+    { label: 'Actions' },
 ])
 
 function createCamera() {
