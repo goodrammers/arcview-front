@@ -57,7 +57,7 @@
             </table>
         </div>
 
-        <VDialog width="400" height="480" v-model="dlg">
+        <VDialog width="400" height="700" v-model="dlg">
             <EditCamera
                 :mode="mode"
                 :camera-id="selectedCameraId"

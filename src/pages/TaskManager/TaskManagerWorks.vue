@@ -72,7 +72,7 @@
             </table>
         </div>
 
-        <VDialog width="400" height="420" v-model="dlg">
+        <VDialog width="400" height="600" v-model="dlg">
             <EditBooth
                 @close="() => (dlg = false)"
                 :boothId="selectedBoothId"

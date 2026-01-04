@@ -54,7 +54,7 @@
             </table>
         </div>
 
-        <VDialog width="400" height="500" v-model="dlg">
+        <VDialog width="400" height="700" v-model="dlg">
             <EditWelder
                 :welder-id="selectedWelder"
                 @close="() => (dlg = false)"
