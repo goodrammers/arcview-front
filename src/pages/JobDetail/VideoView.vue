@@ -4,11 +4,11 @@
         <canvas v-show="hasVideoFile" ref="canvasEl"></canvas>
         <div v-if="videoInfo && !hasVideoFile" class="no-signal">
             <div class="icon-circle"><i class="ri-file-warning-line"></i></div>
-            <span>비디오 파일 없음</span>
+            <span>No video file</span>
         </div>
         <div v-else-if="!videoInfo" class="no-signal">
             <div class="icon-circle"><i class="ri-camera-off-line"></i></div>
-            <span>카메라 정보 없음</span>
+            <span>No camera info</span>
         </div>
     </div>
 </template>

@@ -1,15 +1,15 @@
 <template>
     <div class="container">
         <div class="header-bar">
-            <h2 class="page-title">카메라 목록</h2>
-            <button class="create-btn" @click="createCamera">카메라 추가</button>
+            <h2 class="page-title">Camera List</h2>
+            <button class="create-btn" @click="createCamera">Add Camera</button>
         </div>
 
         <div v-if="cameras.length === 0" class="empty-state">
             <div class="icon-circle">
                 <i class="ri-building-line"></i>
             </div>
-            <h3 class="empty-text">등록된 카메라가 없습니다</h3>
+            <h3 class="empty-text">No cameras found</h3>
         </div>
 
         <div v-else class="table-wrapper">
@@ -34,7 +34,7 @@
                             {{ camera.welder_name || '' }}
                         </td>
                         <td class="cell text-gray">
-                            {{ camera.updated_at || '' }}
+                            {{ formatDate(camera.updated_at) }}
                         </td>
                         <td class="cell">
                             <div class="action-group">
@@ -57,7 +57,7 @@
             </table>
         </div>
 
-        <VDialog width="400" height="480" v-model="dlg">
+        <VDialog width="400" height="700" v-model="dlg">
             <EditCamera
                 :mode="mode"
                 :camera-id="selectedCameraId"
@@ -75,6 +75,7 @@ import { deleteCamera } from '@/api/Camera.ts'
 import EditCamera from '@/pages/TaskManager/EditCamera.vue'
 import { DataTableHeader } from '@/widgets/data-table'
 import type { DataTableHeaderItem } from '@/widgets/data-table/Types.ts'
+import { formatDate } from '@/Utils/Formatter.ts'
 
 const { cameras } = storeToRefs(useTaskItems())
 const { fetchCameras } = useTaskItems()
@@ -85,12 +86,12 @@ const selectedCameraId = ref(-1)
 // 헤더 정의
 const headers = ref<DataTableHeaderItem[]>([
     { label: 'ID' },
-    { label: '이름' },
-    { label: '설명' },
-    { label: 'PORT' },
-    { label: '용접기' },
-    { label: '마지막 수정일' },
-    { label: '작업' },
+    { label: 'Name' },
+    { label: 'Description' },
+    { label: 'Port' },
+    { label: 'Welder' },
+    { label: 'Last Modified' },
+    { label: 'Actions' },
 ])
 
 function createCamera() {

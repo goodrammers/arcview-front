@@ -1,89 +1,93 @@
 <template>
     <div class="container">
-        <h2>{{ mode === 'create' ? '용접기 추가' : '용접기 수정' }}</h2>
-        <p class="label">용접기 이름</p>
-        <input
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-            type="text"
-            v-model="welderName"
-        />
+        <h2 class="title">{{ mode === 'create' ? 'Add Welder' : 'Edit Welder' }}</h2>
 
-        <p class="label">설명</p>
-        <textarea
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-            rows="3"
-            v-model="description"
-        ></textarea>
-
-        <p class="label">IP</p>
-        <input
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-            type="text"
-            v-model="ipAddress"
-        />
-
-        <!-- 카메라 -->
-        <p class="label">카메라</p>
-        <div
-            @click="isCameraSelectOpen = !isCameraSelectOpen"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white cursor-pointer flex items-center justify-between min-h-[42px]"
-            :class="{ 'ring-2 ring-blue-500 border-blue-500': isCameraSelectOpen }"
-        >
-            <span class="text-sm text-gray-900 truncate select-none">
-                {{ selectedCameraText }}
-            </span>
-
-            <svg
-                class="w-4 h-4 text-gray-500 transition-transform"
-                :class="{ 'rotate-180': isCameraSelectOpen }"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 9l-7 7-7-7"
-                />
-            </svg>
+        <div class="form-group">
+            <p class="label">Welder Name</p>
+            <input
+                class="input-field"
+                type="text"
+                v-model="welderName"
+                placeholder="Enter welder name"
+            />
         </div>
 
-        <div
-            v-if="isCameraSelectOpen"
-            class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
-        >
+        <div class="form-group">
+            <p class="label">Description</p>
+            <textarea
+                class="input-field textarea"
+                rows="3"
+                v-model="description"
+                placeholder="Enter description"
+            ></textarea>
+        </div>
+
+        <div class="form-group">
+            <p class="label">IP Address</p>
+            <input class="input-field" type="text" v-model="ipAddress" placeholder="0.0.0.0" />
+        </div>
+
+        <!-- Camera Select -->
+        <div class="form-group">
+            <p class="label">Cameras</p>
             <div
-                v-for="camera in cameras"
-                :key="camera.id"
-                class="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                @click.stop="toggleCameraSelection(camera.id)"
+                @click="isCameraSelectOpen = !isCameraSelectOpen"
+                class="custom-select"
+                :class="{ 'is-open': isCameraSelectOpen }"
             >
-                <input
-                    type="checkbox"
-                    :checked="selectedCameras.includes(camera.id)"
-                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 pointer-events-none"
-                />
-                <span class="ml-2 text-sm text-gray-700 select-none">
-                    {{ camera.name }}
+                <span class="select-text" :class="{ placeholder: selectedCameras.length === 0 }">
+                    {{ selectedCameraText }}
                 </span>
+
+                <svg
+                    class="chevron-icon"
+                    :class="{ 'rotate-180': isCameraSelectOpen }"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 9l-7 7-7-7"
+                    />
+                </svg>
             </div>
 
-            <div v-if="cameras.length === 0" class="px-3 py-2 text-sm text-gray-500">
-                선택 가능한 카메라가 없습니다.
+            <!-- Dropdown Menu -->
+            <div v-if="isCameraSelectOpen" class="dropdown-menu" @click.stop>
+                <div
+                    v-for="camera in cameras"
+                    :key="camera.id"
+                    class="dropdown-item"
+                    @click="toggleCameraSelection(camera.id)"
+                >
+                    <input
+                        type="checkbox"
+                        :checked="selectedCameras.includes(camera.id)"
+                        class="checkbox"
+                    />
+                    <span class="item-text">
+                        {{ camera.name }}
+                    </span>
+                </div>
+
+                <div v-if="cameras.length === 0" class="empty-dropdown">No cameras available</div>
             </div>
         </div>
 
+        <!-- Overlay for closing dropdown -->
         <div
             v-if="isCameraSelectOpen"
             @click="isCameraSelectOpen = false"
-            class="fixed inset-0 z-0 bg-transparent cursor-default"
+            class="dropdown-overlay"
         ></div>
 
         <div class="actions">
-            <BaseButton flex-grow @click="onCancel">취소</BaseButton>
+            <BaseButton flex-grow @click="onCancel" class="cancel-btn">Cancel</BaseButton>
             <BaseButton :disabled="disabled" colored flex-grow @click="onOk">
-                {{ mode === 'create' ? '추가' : '수정' }}
+                {{ mode === 'create' ? 'Create' : 'Update' }}
             </BaseButton>
         </div>
     </div>
@@ -97,6 +101,7 @@ import { storeToRefs } from 'pinia'
 import { useTaskItems } from '@/pages/TaskManager/TaskItems.ts'
 import { ResultCode } from '@/api/Types.ts'
 import { postWelder, putWelder } from '@/api/Welder.ts'
+
 const props = defineProps<{ mode: 'create' | 'edit'; welderId: number }>()
 const emits = defineEmits<{
     (e: 'close'): void
@@ -109,64 +114,76 @@ const { welders } = storeToRefs(useTaskItems())
 const isCameraSelectOpen = ref(false)
 const cameras = ref<Camera[]>([])
 const selectedCameras = ref<number[]>([])
+
 const selectedCameraText = computed(() => {
     if (selectedCameras.value.length === 0) {
-        return '카메라를 선택하세요'
+        return 'Select Cameras'
     }
-
-    // 선택된 ID에 해당하는 이름을 찾아서 콤마로 연결
 
     if (cameras.value.length === 0) {
         return ''
     }
     const c = cameras.value.filter((value) => selectedCameras.value.includes(value.id))
-    return c.map((value) => value.name).join(',')
+    return c.map((value) => value.name).join(', ')
 })
+
 const currentWelder = computed(() => welders.value.find((value) => value.id === welderId.value))
+
 const disabled = computed(() => {
     if (welderName.value === '' || ipAddress.value === '') {
         return true
     }
     if (mode.value === 'edit' && currentWelder.value) {
-        if (welderName.value !== currentWelder.value.name) {
-            return false
-        }
-        if (description.value !== currentWelder.value.description) {
-            return false
-        }
-        if (ipAddress.value !== currentWelder.value.ip_address) {
-            return false
-        }
-        const cameras = currentWelder.value.cameras
-        if (selectedCameras.value.length !== cameras.length) {
-            return false
-        } else {
-            let diff = false
-            selectedCameras.value.forEach((value) => {
-                if (!cameras.find((c) => c.id === value)) {
-                    diff = true
-                }
-            })
-            if (diff) {
-                return false
-            }
-        }
+        // Check if there are any changes
+        const hasNameChanged = welderName.value !== currentWelder.value.name
+        const hasDescChanged = description.value !== (currentWelder.value.description || '')
+        const hasIpChanged = ipAddress.value !== currentWelder.value.ip_address
 
-        return true
+        const originalCameraIds = currentWelder.value.cameras
+            .map((c) => c.id)
+            .sort()
+            .join(',')
+        const newCameraIds = [...selectedCameras.value].sort().join(',')
+        const hasCamerasChanged = originalCameraIds !== newCameraIds
+
+        return !(hasNameChanged || hasDescChanged || hasIpChanged || hasCamerasChanged)
     }
     return false
 })
 
 async function fetchCameras() {
+    // If editing, preload existing cameras
     if (mode.value === 'edit' && currentWelder.value && currentWelder.value.cameras.length > 0) {
-        // @ts-ignore
-        cameras.value.push(...currentWelder.value.cameras)
+        // Avoid duplicates if fetchCameras is called multiple times or data overlaps
+        // But here we just want to ensure the list is populated.
+        // We will fetch ALL available cameras from server, and currentWelder.cameras just helps with selection state logic if needed,
+        // but actually we need the full list to select from.
+        // The previous logic pushed welder cameras to options, which might be duplicates if we fetch all.
+        // Let's just fetch all cameras.
     }
+
+    // Fetch all available cameras (freed or compatible)
+    // Note: Depends on backend logic. Assuming getCameras({ welder_id: -1 }) returns unassigned cameras.
+    // If we are editing, we should also include the cameras currently assigned to THIS welder.
     const r = await getCameras({ welder_id: -1 })
+
+    // Start with currently assigned cameras if editing
+    const currentCameras =
+        mode.value === 'edit' && currentWelder.value ? currentWelder.value.cameras : []
+
     if (r.code === ResultCode.SUCCESS && r.data) {
-        cameras.value.push(...r.data)
+        // Combine current cameras + available cameras, removing duplicates by ID
+        const allCameras = [...currentCameras, ...r.data]
+        // Deduplicate
+        const uniqueCameras = Array.from(
+            new Map(allCameras.map((item) => [item.id, item])).values()
+        )
+        cameras.value = uniqueCameras
+    } else {
+        cameras.value = currentCameras
     }
 }
+
 function toggleCameraSelection(id: number) {
     const index = selectedCameras.value.indexOf(id)
     if (index === -1) {
@@ -191,38 +208,44 @@ function onCancel() {
 }
 
 async function onOk() {
-    if (mode.value === 'create') {
-        const r = await postWelder({
-            booth_id: -1,
-            camera_ids: selectedCameras.value,
-            description: description.value,
-            ip_address: ipAddress.value,
-            name: welderName.value,
-        })
-        if (r.code !== ResultCode.SUCCESS) {
-            alert('용접기 생성에 실패하였습니다.')
-        } else {
-            alert('용접기가 생성되었습니다.')
+    try {
+        if (mode.value === 'create') {
+            const r = await postWelder({
+                booth_id: -1, // Default or unassigned
+                camera_ids: selectedCameras.value,
+                description: description.value,
+                ip_address: ipAddress.value,
+                name: welderName.value,
+            })
+            if (r.code !== ResultCode.SUCCESS) {
+                alert('Failed to create welder.')
+            } else {
+                // Success
+            }
+        } else if (currentWelder.value) {
+            const r = await putWelder({
+                id: currentWelder.value.id,
+                booth_id: currentWelder.value.booth_id,
+                camera_ids: selectedCameras.value,
+                description: description.value,
+                ip_address: ipAddress.value,
+                name: welderName.value,
+            })
+            if (r.code !== ResultCode.SUCCESS) {
+                alert('Failed to update welder.')
+            } else {
+                // Success
+            }
         }
-    } else if (currentWelder.value) {
-        const r = await putWelder({
-            id: currentWelder.value.id,
-            booth_id: currentWelder.value.booth_id,
-            camera_ids: selectedCameras.value,
-            description: description.value,
-            ip_address: ipAddress.value,
-            name: welderName.value,
-        })
-        if (r.code !== ResultCode.SUCCESS) {
-            alert('용접기 수정에 실패하였습니다.')
-        } else {
-            alert('용접기가 수정되었습니다.')
-        }
+        await useTaskItems().fetchWelders()
+        emits('close')
+    } catch (e) {
+        console.error(e)
+        alert('An error occurred.')
     }
-    await useTaskItems().fetchWelders()
-    emits('close')
 }
 
+// Initialize
 fetchCameras()
 initEditMode()
 </script>
@@ -231,23 +254,176 @@ initEditMode()
 .container {
     width: 100%;
     height: 100%;
-    background-color: white;
-    padding: 16px;
+    background-color: #1e293b; /* Dark Slate Background */
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    color: #f1f5f9;
+}
 
-    h2 {
-        font-weight: 600;
+.title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: white;
+}
+
+.form-group {
+    margin-bottom: 16px;
+    position: relative;
+}
+
+.label {
+    color: #94a3b8; /* Slate-400 */
+    font-size: 13px;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.input-field {
+    width: 100%;
+    padding: 10px 12px;
+    background-color: #334155; /* Slate-700 */
+    border: 1px solid #475569; /* Slate-600 */
+    border-radius: 6px;
+    color: white;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s;
+
+    &:focus {
+        border-color: #3b82f6; /* Blue-500 */
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
     }
-    .label {
-        color: rgb(55 65 81);
-        font-size: 14px;
-        margin-bottom: 2px;
-        margin-top: 14px;
+
+    &::placeholder {
+        color: #64748b;
     }
-    .actions {
-        display: flex;
-        width: 100%;
-        gap: 10px;
-        margin-top: 40px;
+}
+
+.textarea {
+    resize: none;
+}
+
+/* Custom Select */
+.custom-select {
+    width: 100%;
+    padding: 10px 12px;
+    background-color: #334155;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 42px;
+    transition: all 0.2s;
+
+    &.is-open {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+}
+
+.select-text {
+    font-size: 14px;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &.placeholder {
+        color: #64748b;
+    }
+}
+
+.chevron-icon {
+    width: 16px;
+    height: 16px;
+    color: #94a3b8;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    margin-top: 4px;
+    background-color: #334155;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 50;
+
+    /* Scrollbar */
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: #475569;
+        border-radius: 3px;
+    }
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.1s;
+
+    &:hover {
+        background-color: #475569;
+    }
+}
+
+.checkbox {
+    width: 16px;
+    height: 16px;
+    accent-color: #3b82f6;
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.item-text {
+    font-size: 14px;
+    color: #e2e8f0;
+}
+
+.empty-dropdown {
+    padding: 12px;
+    font-size: 13px;
+    color: #94a3b8;
+    text-align: center;
+}
+
+.dropdown-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    cursor: default;
+}
+
+.actions {
+    margin-top: auto;
+    display: flex;
+    gap: 12px;
+    padding-top: 24px;
+}
+
+:deep(.cancel-btn) {
+    background-color: transparent !important;
+    border: 1px solid #475569 !important;
+    color: #cbd5e1 !important;
+
+    &:hover {
+        background-color: #334155 !important;
+        color: white !important;
     }
 }
 </style>

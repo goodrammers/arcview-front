@@ -21,5 +21,23 @@ export function formatDuration(start: number, end: number) {
     const hours = Math.floor(totalSeconds / 3600)
     const minutes = Math.floor((totalSeconds % 3600) / 60)
     const seconds = totalSeconds % 60
-    return `${hours > 0 ? hours + '시간 ' : ''}${minutes > 0 ? minutes + '분 ' : ''}${seconds}초`
+    return `${hours > 0 ? hours + 'h ' : ''}${minutes > 0 ? minutes + 'm ' : ''}${seconds}s`
+}
+
+export function formatDate(dateStr: string | undefined | null) {
+    if (!dateStr) {
+        return '-'
+    }
+    const date = new Date(dateStr)
+    if (isNaN(date.getTime())) {
+        return dateStr
+    }
+
+    const YYYY = String(date.getFullYear())
+    const MM = String(date.getMonth() + 1).padStart(2, '0')
+    const DD = String(date.getDate()).padStart(2, '0')
+    const hh = String(date.getHours()).padStart(2, '0')
+    const mm = String(date.getMinutes()).padStart(2, '0')
+    const ss = String(date.getSeconds()).padStart(2, '0')
+    return `${YYYY}-${MM}-${DD} ${hh}:${mm}:${ss}`
 }

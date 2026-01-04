@@ -15,6 +15,8 @@ interface JobVideo {
     camera_id: number
     camera_name: string
     file_path: string
+    start_time: number
+    end_time: number
 }
 
 export interface JobMeasurement {

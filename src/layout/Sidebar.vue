@@ -2,7 +2,7 @@
     <div class="sidebar" :class="{ collapsed: isCollapsed }">
         <div class="sidebar-header">
             <div class="logo-area">
-                <h1 class="logo-text">ArcVue</h1>
+                <h1 class="logo-text">ArcSync</h1>
             </div>
 
             <button class="toggle-btn" @click="toggleSidebar">
@@ -40,10 +40,10 @@ const selectedMenu = ref(0)
 const isCollapsed = ref(false)
 
 const menuItems = [
-    { label: '홈', icon: 'ri-home-line', path: '/dashboard' },
-    { label: '실시간 보기', icon: 'ri-live-line', path: '/real-time' },
-    { label: '작업 관리', icon: 'ri-tools-line', path: '/task' },
-    { label: '관리자 메뉴', icon: 'ri-admin-line', path: '/admin' },
+    { label: 'Home', icon: 'ri-home-line', path: '/dashboard' },
+    { label: 'Live Feed', icon: 'ri-live-line', path: '/real-time' },
+    { label: 'Task Management', icon: 'ri-tools-line', path: '/task' },
+    { label: 'Admin Menu', icon: 'ri-admin-line', path: '/admin' },
 ]
 
 function toggleSidebar() {

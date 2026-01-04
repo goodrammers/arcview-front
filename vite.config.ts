@@ -3,6 +3,10 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
+// const ipAddress = '39.115.174.184:5050'
+// const ipAddress = '192.168.0.77:5050'
+const ipAddress = 'localhost:5050'
+
 // https://vite.dev/config/
 export default defineConfig({
     plugins: [vue()],
@@ -15,13 +19,13 @@ export default defineConfig({
         port: 3200,
         proxy: {
             '/api': {
-                target: `http://192.168.0.77:5050`,
+                target: `http://${ipAddress}`,
             },
             '/videos': {
-                target: 'http://192.168.0.77:5050',
+                target: `http://${ipAddress}`,
             },
             '/realtime': {
-                target: 'ws://192.168.0.77:5050',
+                target: `ws://${ipAddress}`,
                 ws: true,
             },
         },

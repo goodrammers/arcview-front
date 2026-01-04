@@ -9,7 +9,7 @@
                         @click.stop="openMenu(area.key, $event)"
                     >
                         <button class="add-btn"><i class="ri-add-line"></i></button>
-                        <span class="empty-text">화면 선택</span>
+                        <span class="empty-text">Select Screen</span>
                     </div>
                     <div v-else class="content-filled">
                         <div class="content-body-full">
@@ -45,7 +45,7 @@
                 :style="{ top: `${menuPos.y}px`, left: `${menuPos.x}px` }"
                 @click.stop
             >
-                <div class="menu-header">화면 선택</div>
+                <div class="menu-header">Select Screen</div>
                 <ul class="menu-list">
                     <li
                         v-for="(video, idx) in availableVideos"
@@ -58,14 +58,14 @@
                     </li>
                     <li v-if="availableVideos.length === 0" class="disabled-item">
                         <i class="ri-camera-off-line"></i>
-                        카메라 데이터 없음
+                        No camera data
                     </li>
                     <li
                         @click="selectContent('WELDING_CHART')"
                         :class="{ active: slots[activeMenuSlot] === 'WELDING_CHART' }"
                     >
                         <i class="ri-line-chart-line text-blue-icon"></i>
-                        차트
+                        Chart
                     </li>
                 </ul>
             </div>

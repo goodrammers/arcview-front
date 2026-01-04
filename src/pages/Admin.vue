@@ -1,16 +1,12 @@
 <template>
     <div class="page-container">
         <div class="content-wrapper">
-            <div class="header-section">
-                <h1 class="page-title">관리자 메뉴</h1>
-            </div>
-
-            <h2 class="section-title">서비스 포트 설정</h2>
+            <h2 class="section-title mt-10">Service Port Configuration</h2>
             <div class="section-wrapper">
                 <div class="config-card">
                     <div class="input-group">
                         <div class="input-field">
-                            <label class="input-label">포트 번호</label>
+                            <label class="input-label">Port Number</label>
                             <input
                                 class="text-input"
                                 placeholder="포트 번호를 입력하세요"
@@ -18,17 +14,17 @@
                                 v-model="update.port"
                             />
                         </div>
-                        <button class="action-btn" @click="setPort">적용</button>
+                        <button class="action-btn" @click="setPort">Apply</button>
                     </div>
                 </div>
             </div>
 
-            <h2 class="section-title mt-10">동영상 디렉토리 설정</h2>
+            <h2 class="section-title mt-10">Media Directory Settings</h2>
             <div class="section-wrapper">
                 <div class="config-card">
                     <div class="input-group">
                         <div class="input-field">
-                            <label class="input-label">동영상 디렉토리</label>
+                            <label class="input-label">Media Directory</label>
                             <input
                                 class="text-input"
                                 placeholder="디텍토리를 선택하세요"
@@ -117,6 +113,7 @@ fetch()
 .section-wrapper {
     background-color: white;
     color: #333;
+    border-radius: 10px;
 }
 
 .section-title {

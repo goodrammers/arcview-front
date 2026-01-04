@@ -8,9 +8,13 @@ import JobDetail from '@/pages/JobDetail/JobDetail.vue'
 
 const routes: Array<RouteRecordRaw> = [
     {
+        path: '/login',
+        component: () => import('@/pages/Login.vue'),
+    },
+    {
         path: '/',
         component: MainLayout,
-        redirect: '/dashboard',
+        redirect: '/login',
         children: [
             { path: '/dashboard', component: Dashboard },
             { path: '/job-detail', component: JobDetail },

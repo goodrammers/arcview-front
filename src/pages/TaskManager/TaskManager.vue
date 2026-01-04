@@ -1,31 +1,27 @@
 <template>
     <div class="page-container">
-        <div class="content-wrapper">
-            <div class="page-header">
-                <h1 class="page-title">작업 관리</h1>
-            </div>
-
+        <div class="content-wrapper mt-10">
             <div class="tab-group">
                 <button
                     class="tab-btn"
                     :class="{ active: selectedTab === 0 }"
                     @click="selectTab(0)"
                 >
-                    작업실
+                    Booth
                 </button>
                 <button
                     class="tab-btn"
                     :class="{ active: selectedTab === 1 }"
                     @click="selectTab(1)"
                 >
-                    용접기
+                    Welding Unit
                 </button>
                 <button
                     class="tab-btn"
                     :class="{ active: selectedTab === 2 }"
                     @click="selectTab(2)"
                 >
-                    카메라
+                    Camera
                 </button>
             </div>
 
