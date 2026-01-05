@@ -9,7 +9,7 @@
                             <label class="input-label">Port Number</label>
                             <input
                                 class="text-input"
-                                placeholder="포트 번호를 입력하세요"
+                                placeholder="Enter port number"
                                 type="number"
                                 v-model="update.port"
                             />
@@ -27,11 +27,11 @@
                             <label class="input-label">Media Directory</label>
                             <input
                                 class="text-input"
-                                placeholder="디텍토리를 선택하세요"
+                                placeholder="Select directory"
                                 v-model="update.dir"
                             />
                         </div>
-                        <button class="action-btn" @click="setDirectory">적용</button>
+                        <button class="action-btn" @click="setDirectory">Apply</button>
                     </div>
                 </div>
             </div>

@@ -36,7 +36,7 @@ async function login() {
     if (id.value === 'salray' && pw.value === 'qwer1234%') {
         router.push('/dashboard')
     } else {
-        alert('아이디 또는 비밀번호를 확인해주세요.')
+        alert('Please check your ID or password.')
     }
 }
 </script>

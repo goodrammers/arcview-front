@@ -9,7 +9,7 @@
             <div class="icon-circle">
                 <i class="ri-building-line"></i>
             </div>
-            <h3 class="empty-text">등록된 작업실이 없습니다</h3>
+            <h3 class="empty-text">No booths registered</h3>
         </div>
 
         <div v-else class="table-wrapper">
@@ -115,7 +115,7 @@ function createBooth() {
 }
 
 async function onDeleteBooth(id: number) {
-    const ok = confirm('해당 작업실을 삭제하시겠습니까?')
+    const ok = confirm('Are you sure you want to delete this booth?')
     if (!ok) {
         return
     }
@@ -123,7 +123,7 @@ async function onDeleteBooth(id: number) {
     if (r.code === ResultCode.SUCCESS) {
         await fetchBooths()
     } else {
-        alert('삭제에 실패했습니다.')
+        alert('Failed to delete booth')
     }
 }
 

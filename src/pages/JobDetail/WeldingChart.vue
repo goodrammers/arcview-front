@@ -37,25 +37,25 @@ const emit = defineEmits(['metrics-change'])
 const options = [
     {
         value: 'current',
-        label: '전류 (A)',
+        label: 'Current (A)',
         color: 'rgb(255, 99, 132)',
         borderColor: 'rgb(255, 99, 132)',
     },
     {
         value: 'voltage',
-        label: '전압 (V)',
+        label: 'Voltage (V)',
         color: 'rgb(53, 162, 235)',
         borderColor: 'rgb(53, 162, 235)',
     },
     {
         value: 'speed',
-        label: '속도 (m/min)',
+        label: 'Speed (m/min)',
         color: 'rgb(46, 204, 113)',
         borderColor: 'rgb(46, 204, 113)',
     },
     {
         value: 'resistance',
-        label: '저항 (Ω)',
+        label: 'Resistance (Ω)',
         color: 'rgb(165, 46, 204)',
         borderColor: 'rgb(165, 46, 204)',
     },
