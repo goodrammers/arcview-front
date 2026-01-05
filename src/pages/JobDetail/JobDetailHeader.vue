@@ -8,7 +8,7 @@
                     </button>
 
                     <div class="title-group">
-                        <h1 class="page-title">Job ID - {{ currentJobId }}</h1>
+                        <h1 class="page-title">Task ID - {{ currentJobId }}</h1>
                         <div class="meta-info">
                             <span>Booth: {{ boothName }}</span>
                             <span>Welder: {{ welderName }}</span>
