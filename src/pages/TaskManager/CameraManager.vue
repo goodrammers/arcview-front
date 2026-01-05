@@ -107,7 +107,7 @@ function onEditCamera(id: number) {
 }
 
 async function onDeleteCamera(id: number) {
-    const ok = confirm('해당 카메라를 삭제하시겠습니까?')
+    const ok = confirm('Are you sure you want to delete this camera?')
     if (ok) {
         await deleteCamera(id)
         await fetchCameras()

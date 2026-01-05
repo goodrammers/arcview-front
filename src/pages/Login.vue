@@ -18,6 +18,23 @@
                     <div class="forgot-password">
                         <a href="#">Forgot password?</a>
                     </div>
+                    <div style="display: flex; justify-content: flex-end">
+                        <button
+                            @click="login"
+                            style="
+                                cursor: pointer;
+                                background-color: #3b4faa;
+                                width: 84px;
+                                height: 28px;
+                                border-radius: 3px;
+                                color: white;
+                                font-weight: 500;
+                                font-size: 16px;
+                            "
+                        >
+                            Login
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -36,7 +53,7 @@ async function login() {
     if (id.value === 'salray' && pw.value === 'qwer1234%') {
         router.push('/dashboard')
     } else {
-        alert('아이디 또는 비밀번호를 확인해주세요.')
+        alert('Please check your ID or password.')
     }
 }
 </script>
@@ -71,7 +88,7 @@ async function login() {
 .login-box {
     width: 100%;
     background-color: #27283d; /* Card background */
-    padding: 48px 40px;
+    padding: 48px 40px 20px 40px;
     border-radius: 4px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
@@ -89,7 +106,7 @@ async function login() {
     gap: 16px;
 
     label {
-        font-size: 15px;
+        font-size: 18px;
         font-weight: 600;
         color: #b0b0b0; /* Light gray label */
         width: 80px; /* Fixed width for alignment */
