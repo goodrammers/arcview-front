@@ -467,7 +467,10 @@ onMounted(() => {
 
 onUnmounted(() => {
     document.removeEventListener('fullscreenchange', onFullscreenChange)
-    if (chartInstance.value) chartInstance.value.destroy()
+    if (chartInstance.value) {
+        chartInstance.value.destroy()
+        chartInstance.value = null
+    }
 })
 
 watch(selectedCamera, () => {
