@@ -30,3 +30,5 @@ coverage
 *.tsbuildinfo
 *.mp4
 db.json
+
+settings.local.json
