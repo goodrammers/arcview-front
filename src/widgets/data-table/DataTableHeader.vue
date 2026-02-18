@@ -4,10 +4,16 @@
             <th
                 v-for="(col, index) in headers"
                 :key="index"
-                :class="col.align || 'left'"
+                :class="[col.align || 'left', { sortable: !!col.sortKey }]"
                 :style="{ width: col.width }"
+                @click="col.sortKey && onSort(col.sortKey)"
             >
-                {{ col.label }}
+                <span class="header-content">
+                    {{ col.label }}
+                    <span v-if="col.sortKey === sortKey" class="sort-indicator">
+                        {{ order === 'asc' ? '▲' : '▼' }}
+                    </span>
+                </span>
             </th>
         </tr>
     </thead>
@@ -18,25 +24,34 @@ import type { DataTableHeaderItem } from '@/widgets/data-table/Types.ts'
 
 defineProps<{
     headers: DataTableHeaderItem[]
+    sortKey?: string
+    order?: string
 }>()
+
+const emit = defineEmits<{
+    sort: [sortKey: string]
+}>()
+
+function onSort(key: string) {
+    emit('sort', key)
+}
 </script>
 
 <style scoped lang="scss">
 thead {
     tr {
-        background-color: #3e4771; // 요청하신 배경색
+        background-color: #3e4771;
     }
 
     th {
-        padding: 16px 24px; // px-6 py-4 대응
-        color: #ffffff; // 어두운 배경이므로 글자색은 흰색으로 변경 (기존 text-gray-500 제거)
-        font-size: 12px; // text-xs 대응
-        font-weight: 500; // font-medium 대응
-        text-transform: uppercase; // uppercase 대응
-        letter-spacing: 0.05em; // tracking-wider 대응
-        white-space: nowrap; // 줄바꿈 방지
+        padding: 16px 24px;
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
 
-        // 정렬 클래스
         &.left {
             text-align: left;
         }
@@ -46,6 +61,25 @@ thead {
         &.right {
             text-align: right;
         }
+
+        &.sortable {
+            cursor: pointer;
+            user-select: none;
+
+            &:hover {
+                background-color: #4a5585;
+            }
+        }
     }
+}
+
+.header-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.sort-indicator {
+    font-size: 10px;
 }
 </style>
