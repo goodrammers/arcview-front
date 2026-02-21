@@ -14,10 +14,19 @@
                 <span class="dot" :style="{ backgroundColor: opt.color }"></span>
                 {{ opt.label }}
             </button>
+
+            <label class="auto-scroll-toggle">
+                <input type="checkbox" v-model="autoScroll" />
+                <span>Auto Scroll</span>
+            </label>
         </div>
 
         <div class="canvas-wrapper" ref="wrapperRef">
-            <canvas ref="chartCanvas" @click="onCanvasClick"></canvas>
+            <canvas
+                ref="chartCanvas"
+                @pointerdown="onPointerDown"
+                @pointerup="onPointerUp"
+            ></canvas>
         </div>
     </div>
 </template>
@@ -27,6 +36,9 @@ import { ref, onMounted, onUnmounted, watch, shallowRef } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useWeldingStore } from '@/store/Welding.ts'
 import Chart from 'chart.js/auto'
+import zoomPlugin from 'chartjs-plugin-zoom'
+
+Chart.register(zoomPlugin)
 
 const props = defineProps<{
     initialMetrics?: string[]
@@ -40,24 +52,32 @@ const options = [
         label: 'Current (A)',
         color: 'rgb(255, 99, 132)',
         borderColor: 'rgb(255, 99, 132)',
+        min: 0,
+        max: 500,
     },
     {
         value: 'voltage',
         label: 'Voltage (V)',
         color: 'rgb(53, 162, 235)',
         borderColor: 'rgb(53, 162, 235)',
+        min: 0,
+        max: 60,
     },
     {
         value: 'speed',
         label: 'Speed (m/min)',
         color: 'rgb(46, 204, 113)',
         borderColor: 'rgb(46, 204, 113)',
+        min: 0,
+        max: 250,
     },
     {
         value: 'resistance',
         label: 'Resistance (Ω)',
         color: 'rgb(165, 46, 204)',
         borderColor: 'rgb(165, 46, 204)',
+        min: 0,
+        max: 1000,
     },
 ]
 
@@ -72,10 +92,22 @@ const chartCanvas = ref<HTMLCanvasElement | null>(null)
 const chartInstance = shallowRef<Chart | null>(null)
 let resizeObserver: ResizeObserver | null = null
 
+const controlsRef = ref<HTMLElement | null>(null)
+
 const weldingStore = useWeldingStore()
-const { voltages, currents, feedingSpeed, resistances, currentTime, duration } =
+const { voltages, currents, feedingSpeed, resistances, currentTime, duration, isPlaying } =
     storeToRefs(weldingStore)
 const { seekTo } = weldingStore
+
+// Zoom/pan state
+const isZoomed = ref(false)
+const isPanning = ref(false)
+const autoScroll = ref(true)
+let waitingForReentry = false
+
+// Pointer tracking for click vs drag distinction
+let pointerDownX = 0
+let pointerDownY = 0
 
 function toggleMetric(key: string) {
     const index = selectedMetrics.value.indexOf(key)
@@ -112,6 +144,22 @@ function getDataArray(type: string) {
 
 function getOption(type: string) {
     return options.find((o) => o.value === type)
+}
+
+function updateZoomState() {
+    if (!chartInstance.value) return
+    const scales = chartInstance.value.scales
+    if (!scales || !scales.x) return
+
+    const xMin = scales.x.min
+    const xMax = scales.x.max
+    const fullMin = 0
+    const fullMax = duration.value > 0 ? duration.value : 1
+
+    // Consider zoomed if the visible range is noticeably smaller than the full range
+    isZoomed.value = (xMax - xMin) < (fullMax - fullMin) * 0.99
+
+    isPanning.value = false
 }
 
 const verticalLinePlugin = {
@@ -154,6 +202,38 @@ function initChart() {
             plugins: {
                 legend: { display: false },
                 tooltip: { enabled: true, mode: 'index', intersect: false, animation: false },
+                zoom: {
+                    pan: {
+                        enabled: true,
+                        mode: 'x',
+                        onPanStart() {
+                            isPanning.value = true
+                            waitingForReentry = true
+                            return true
+                        },
+                        onPanComplete() {
+                            updateZoomState()
+                        },
+                    },
+                    zoom: {
+                        wheel: { enabled: true, speed: 0.1 },
+                        mode: 'x',
+                        onZoomStart() {
+                            waitingForReentry = true
+                            return true
+                        },
+                        onZoomComplete() {
+                            updateZoomState()
+                        },
+                    },
+                    limits: {
+                        x: {
+                            min: 0,
+                            max: duration.value > 0 ? duration.value : undefined,
+                            minRange: 0.5,
+                        },
+                    },
+                },
             },
             scales: {
                 x: {
@@ -219,7 +299,18 @@ function updateChartData() {
 
     if (chartInstance.value.options.scales) {
         if (chartInstance.value.options.scales.x) {
-            chartInstance.value.options.scales.x.max =
+            // Update x-axis max for non-zoomed state
+            if (!isZoomed.value) {
+                chartInstance.value.options.scales.x.max =
+                    duration.value > 0 ? duration.value : undefined
+            }
+        }
+
+        // Sync zoom limits with duration
+        // @ts-ignore
+        if (chartInstance.value.options.plugins?.zoom?.limits?.x) {
+            // @ts-ignore
+            chartInstance.value.options.plugins.zoom.limits.x.max =
                 duration.value > 0 ? duration.value : undefined
         }
 
@@ -227,12 +318,13 @@ function updateChartData() {
         if (chartInstance.value.options.scales.y) {
             chartInstance.value.options.scales.y.display = selectedMetrics.value.length > 0
 
-            // 색상 적용
             if (selectedMetrics.value.length > 0) {
                 const opt = getOption(selectedMetrics.value[0])
                 if (opt) {
                     // @ts-ignore
                     chartInstance.value.options.scales.y.ticks.color = opt.color
+                    chartInstance.value.options.scales.y.min = opt.min
+                    chartInstance.value.options.scales.y.max = opt.max
                 }
             }
         }
@@ -241,12 +333,13 @@ function updateChartData() {
         if (chartInstance.value.options.scales.y1) {
             chartInstance.value.options.scales.y1.display = selectedMetrics.value.length > 1
 
-            // 색상 적용
             if (selectedMetrics.value.length > 1) {
                 const opt = getOption(selectedMetrics.value[1])
                 if (opt) {
                     // @ts-ignore
                     chartInstance.value.options.scales.y1.ticks.color = opt.color
+                    chartInstance.value.options.scales.y1.min = opt.min
+                    chartInstance.value.options.scales.y1.max = opt.max
                 }
             }
         }
@@ -254,14 +347,26 @@ function updateChartData() {
     chartInstance.value.update()
 }
 
-function onCanvasClick(event: MouseEvent) {
-    if (!chartInstance.value || !chartCanvas.value) return
-    const rect = chartCanvas.value.getBoundingClientRect()
-    const xPixel = event.clientX - rect.left
-    const scales = chartInstance.value.scales
-    if (scales && scales.x) {
-        const timeValue = scales.x.getValueForPixel(xPixel)
-        if (timeValue !== undefined) seekTo(timeValue)
+function onPointerDown(event: PointerEvent) {
+    pointerDownX = event.clientX
+    pointerDownY = event.clientY
+    isPanning.value = false
+}
+
+function onPointerUp(event: PointerEvent) {
+    const dx = Math.abs(event.clientX - pointerDownX)
+    const dy = Math.abs(event.clientY - pointerDownY)
+
+    // Only treat as click (seekTo) if pointer moved less than 5px and not panning
+    if (dx < 5 && dy < 5 && !isPanning.value) {
+        if (!chartInstance.value || !chartCanvas.value) return
+        const rect = chartCanvas.value.getBoundingClientRect()
+        const xPixel = event.clientX - rect.left
+        const scales = chartInstance.value.scales
+        if (scales && scales.x) {
+            const timeValue = scales.x.getValueForPixel(xPixel)
+            if (timeValue !== undefined) seekTo(timeValue)
+        }
     }
 }
 
@@ -270,8 +375,41 @@ watch(
     () => updateChartData(),
     { deep: true }
 )
+
+watch(isPlaying, (playing) => {
+    if (playing) waitingForReentry = false
+})
+
 watch(currentTime, () => {
-    if (chartInstance.value) chartInstance.value.update('none')
+    if (!chartInstance.value) return
+
+    // Auto-scroll: keep currentTime at the center of the visible range
+    if (isPlaying.value && isZoomed.value && autoScroll.value) {
+        const scales = chartInstance.value.scales
+        if (scales && scales.x) {
+            const visibleRange = scales.x.max - scales.x.min
+
+            if (waitingForReentry) {
+                // After user pan/zoom, wait until currentTime is visible but not at the edges
+                const margin = visibleRange * 0.1
+                if (
+                    currentTime.value >= scales.x.min + margin &&
+                    currentTime.value <= scales.x.max - margin
+                ) {
+                    waitingForReentry = false
+                }
+            } else {
+                // Center currentTime in the visible range
+                const halfRange = visibleRange / 2
+                const maxLimit = duration.value > 0 ? duration.value : Infinity
+                const clampedMin = Math.max(0, Math.min(currentTime.value - halfRange, maxLimit - visibleRange))
+                chartInstance.value.options.scales!.x!.min = clampedMin
+                chartInstance.value.options.scales!.x!.max = clampedMin + visibleRange
+            }
+        }
+    }
+
+    chartInstance.value.update('none')
 })
 
 onMounted(() => {
@@ -360,6 +498,22 @@ onUnmounted(() => {
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+}
+
+.auto-scroll-toggle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #94a3b8;
+    cursor: pointer;
+    user-select: none;
+    margin-left: 4px;
+
+    input[type='checkbox'] {
+        accent-color: #0ea5e9;
+        cursor: pointer;
     }
 }
 
